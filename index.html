@@ -7,7 +7,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<!-- SheetJS for reading the uploaded file -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<!-- ExcelJS for generating the styled/highlighted Excel output -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
 
 <style>
@@ -337,19 +339,19 @@ body::before {
 .btn-download.visible { display: inline-flex; }
 
 /* STATS */
-.stats-strip { display: none; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem; }
+.stats-strip { display: none; grid-template-columns: repeat(5, 1fr); gap: 1rem; margin-bottom: 2rem; }
 .stats-strip.visible { display: grid; }
 .stat-card {
   background: var(--surface);
   border: 1px solid var(--border-light);
   border-radius: var(--r-lg);
-  padding: 1.25rem 1.5rem;
+  padding: 1.25rem 1.2rem;
   display: flex;
   flex-direction: column;
   gap: .3rem;
 }
 .stat-card .s-label { font-size: .7rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
-.stat-card .s-value { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 2rem; color: var(--brand); line-height: 1; }
+.stat-card .s-value { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.8rem; color: var(--brand); line-height: 1; }
 .stat-card .s-desc { font-size: .78rem; color: var(--muted); }
 
 /* GRID */
@@ -491,12 +493,12 @@ body::before {
   background: var(--surface-3);
   padding: .7rem 1.25rem;
   border-top: 1px solid var(--border-light);
-  font-size: .75rem;
+  font-size: .72rem;
   font-weight: 600;
   color: var(--muted);
   display: flex;
   justify-content: space-between;
-  gap: 1rem;
+  gap: .75rem;
   flex-wrap: wrap;
 }
 .f-pill { display: flex; align-items: center; gap: .35rem; }
@@ -504,6 +506,7 @@ body::before {
 .f-dot.warn   { background: var(--accent); }
 .f-dot.danger { background: var(--danger); }
 .f-dot.purple { background: #8b00cc; }
+.f-dot.info   { background: var(--brand-glow); }
 
 /* EMPTY / NO-RESULTS */
 .empty-state { grid-column: 1/-1; text-align: center; padding: 4rem 2rem; }
@@ -530,6 +533,7 @@ body::before {
 </head>
 <body>
 
+<!-- ══ LOGIN ══ -->
 <div id="loginPage">
   <div class="login-wrap">
     <div class="login-brand">
@@ -550,6 +554,7 @@ body::before {
   </div>
 </div>
 
+<!-- ══ PORTAL ══ -->
 <div id="portalPage">
   <nav class="topnav">
     <div class="nav-logo">
@@ -617,6 +622,11 @@ body::before {
         <div class="s-desc">With issues this month</div>
       </div>
       <div class="stat-card">
+        <div class="s-label">Total Minutes Late</div>
+        <div class="s-value" id="statLateMins">0</div>
+        <div class="s-desc">Late entries only</div>
+      </div>
+      <div class="stat-card">
         <div class="s-label">Total Lost Minutes</div>
         <div class="s-value" id="statMins">0</div>
         <div class="s-desc">Late + Early combined</div>
@@ -647,28 +657,15 @@ body::before {
 </div>
 
 <script>
-// ═══════════════════════════════════════════════════════════════════════════
-//  KASE ATTENDANCE — TIME RULES (UPDATED)
-//  ─────────────────────────────────────────────────────────────────────────
-//  AM SHIFT:       10:15 → 13:00  (Late after 10:15 | Half Day after 11:30)
-//  LUNCH:          13:00 → 13:45
-//  PM SHIFT:       13:45 → 17:15  (Late after 13:45 | Half Day after 15:00)
-//
-//  GRACE PERIOD: 180 minutes cumulative.
-//  Once 180 is exceeded, the late mark on that day (and any future late mark) 
-//  is converted to a half-day leave.
-// ═══════════════════════════════════════════════════════════════════════════
-
 const APP_PASS      = "admin123";
-const SHIFT_START   = 10 * 60 + 15; // 615 = 10:15
-const AM_HD_CUTOFF  = 11 * 60 + 30; // 690 = 11:30
-const LUNCH_START   = 13 * 60;      // 780 = 13:00
-const LUNCH_END     = 13 * 60 + 45; // 825 = 13:45
-const PM_HD_CUTOFF  = 15 * 60;      // 900 = 15:00
-const SHIFT_END     = 17 * 60 + 15; // 1035 = 17:15
+const SHIFT_START   = 10 * 60 + 15; // 10:15
+const AM_HD_CUTOFF  = 11 * 60 + 30; // 11:30
+const LUNCH_START   = 13 * 60;      // 13:00
+const LUNCH_END     = 13 * 60 + 45; // 13:45
+const PM_HD_CUTOFF  = 15 * 60;      // 15:00
+const SHIFT_END     = 17 * 60 + 15; // 17:15
 const GRACE_THRESHOLD = 180;        // 180 mins max cumulative
 
-// ── AUTH ─────────────────────────────────────────────────────────────────────
 if (sessionStorage.getItem('auth') === 'true') showPortal();
 
 document.getElementById('loginForm').addEventListener('submit', e => {
@@ -697,7 +694,6 @@ function showPortal() {
 let reportBuffer = [];
 let allCards     = [];
 
-// ── FILE UPLOAD ──────────────────────────────────────────────────────────────
 document.getElementById('fileInput').addEventListener('change', function(e) {
   const file = e.target.files[0];
   if (!file) return;
@@ -714,8 +710,6 @@ document.getElementById('fileInput').addEventListener('change', function(e) {
   reader.readAsArrayBuffer(file);
 });
 
-// ── TIME HELPERS ─────────────────────────────────────────────────────────────
-
 function parseMins(t) {
   if (!t || typeof t !== 'string') return null;
   const s = t.trim();
@@ -731,42 +725,24 @@ function fmtMins(m) {
   return hh > 0 ? `${hh}h ${mm}m` : `${mm}m`;
 }
 
-function timeStr(mins) {
-  if (mins === null) return null;
-  const h = Math.floor(mins / 60);
-  const m = mins % 60;
-  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-}
-
-/**
- * Analyse punch-in time with Half-Day triggers
- */
 function analyseEntry(rawIn) {
   if (rawIn === null) return { lateMins: 0, flags: [], entryType: 'absent' };
-
-  if (rawIn <= SHIFT_START)
-    return { lateMins: 0, flags: [], entryType: 'ontime' };
-
-  if (rawIn >= SHIFT_END)
-    return { lateMins: 0, flags: ['GHOST'], entryType: 'ghost' };
+  if (rawIn <= SHIFT_START) return { lateMins: 0, flags: [], entryType: 'ontime' };
+  if (rawIn >= SHIFT_END) return { lateMins: 0, flags: ['GHOST'], entryType: 'ghost' };
 
   if (rawIn > LUNCH_END) {
-    // PM Late
     let late = rawIn - LUNCH_END;
     let flags = ['PM_LATE'];
-    if (rawIn > PM_HD_CUTOFF) flags.push('HD_IN_AUTO'); // Arrival after 3:00 PM
+    if (rawIn > PM_HD_CUTOFF) flags.push('HD_IN_AUTO');
     return { lateMins: late, flags, entryType: 'pm_late' };
   }
-
   if (rawIn > LUNCH_START) {
-    // Treat entering during lunch break as starting at 13:45 on the dot
     return { lateMins: 0, flags: ['LUNCH_WINDOW'], entryType: 'lunch_window' };
   }
 
-  // AM Late
   let late = rawIn - SHIFT_START;
   let flags = ['AM_LATE'];
-  if (rawIn > AM_HD_CUTOFF) flags.push('HD_IN_AUTO'); // Arrival after 11:30 AM
+  if (rawIn > AM_HD_CUTOFF) flags.push('HD_IN_AUTO');
   return { lateMins: late, flags, entryType: 'am_late' };
 }
 
@@ -775,46 +751,24 @@ function analyseExit(rawOut, hasPunchIn) {
     if (hasPunchIn) return { earlyMins: 0, flags: ['MISSING_PUNCHOUT'], exitType: 'missing' };
     return { earlyMins: 0, flags: [], exitType: 'absent' };
   }
-
   if (rawOut >= SHIFT_END)   return { earlyMins: 0, flags: [], exitType: 'ontime' };
   if (rawOut < SHIFT_START)  return { earlyMins: 0, flags: [], exitType: 'anomalous' };
-
-  if (rawOut < LUNCH_END)
-    return { earlyMins: LUNCH_END - rawOut, flags: ['HD_OUT'], exitType: 'hd_out' };
+  if (rawOut < LUNCH_END)    return { earlyMins: LUNCH_END - rawOut, flags: ['HD_OUT'], exitType: 'hd_out' };
 
   return { earlyMins: SHIFT_END - rawOut, flags: ['EARLY_OUT'], exitType: 'early_2nd' };
 }
 
 function buildRationale(log) {
   const parts = [];
-
-  if (log.flags.includes('MISSING_PUNCHOUT'))
-    parts.push(`Punched in at ${log.inStr} but no punch-out recorded (possible missed swipe)`);
-
-  if (log.flags.includes('GHOST'))
-    parts.push(`Punch-in at ${log.inStr} is after shift end (17:15)`);
-
-  if (log.flags.includes('AM_LATE') && log.lateMins > 0)
-    parts.push(`Arrived ${fmtMins(log.lateMins)} late for AM shift`);
-
-  if (log.flags.includes('LUNCH_WINDOW'))
-    parts.push(`Arrived during lunch break (${log.inStr})`);
-
-  if (log.flags.includes('PM_LATE') && log.lateMins > 0)
-    parts.push(`Arrived ${fmtMins(log.lateMins)} after PM shift resumed`);
-
-  if (log.flags.includes('HD_IN_AUTO'))
-    parts.push('Arrival exceeded the strict Half-Day cutoff limits (11:30 AM or 3:00 PM)');
-
-  if (log.flags.includes('HD_OUT'))
-    parts.push(`Left at ${log.outStr} before PM shift start — marked as Half-Day Leave`);
-
-  if (log.flags.includes('EARLY_OUT') && log.earlyMins > 0)
-    parts.push(`Left ${fmtMins(log.earlyMins)} early`);
-
-  if (log.flags.includes('GRACE_EXCEEDED'))
-    parts.push('Cumulative late minutes breached the 180-min threshold — forced Half-Day Leave trigger');
-
+  if (log.flags.includes('MISSING_PUNCHOUT')) parts.push(`Punched in at ${log.inStr} but no punch-out recorded`);
+  if (log.flags.includes('GHOST')) parts.push(`Punch-in at ${log.inStr} is after shift end (17:15)`);
+  if (log.flags.includes('AM_LATE') && log.lateMins > 0) parts.push(`Arrived ${fmtMins(log.lateMins)} late for AM shift`);
+  if (log.flags.includes('LUNCH_WINDOW')) parts.push(`Arrived during lunch break (${log.inStr})`);
+  if (log.flags.includes('PM_LATE') && log.lateMins > 0) parts.push(`Arrived ${fmtMins(log.lateMins)} after PM shift resumed`);
+  if (log.flags.includes('HD_IN_AUTO')) parts.push('Arrival exceeded Half-Day cutoff limits (11:30 AM or 3:00 PM)');
+  if (log.flags.includes('HD_OUT')) parts.push(`Left at ${log.outStr} before PM shift start — marked as Half-Day Leave`);
+  if (log.flags.includes('EARLY_OUT') && log.earlyMins > 0) parts.push(`Left ${fmtMins(log.earlyMins)} early`);
+  if (log.flags.includes('GRACE_EXCEEDED')) parts.push('Cumulative late minutes breached the 180-min threshold — forced Half-Day Leave trigger');
   return parts.length > 0 ? parts.join('. ') + '.' : '—';
 }
 
@@ -850,7 +804,6 @@ function initials(name) {
   return name.split(' ').filter(Boolean).map(w => w[0]).slice(0, 2).join('').toUpperCase();
 }
 
-// ── MAIN PROCESSING ──────────────────────────────────────────────────────────
 function processAttendance(rows) {
   const grid = document.getElementById('resultsGrid');
   grid.innerHTML = '';
@@ -868,7 +821,6 @@ function processAttendance(rows) {
   function flushEmployee() {
     if (!currentEmp || !inTimeRow) return;
 
-    // STEP 1: Process and store all valid days in chronological order
     const rawLogs = [];
     colIndexes.sort((a,b) => a - b).forEach(idx => {
       const inStr  = inTimeRow[idx]                 ? String(inTimeRow[idx]).trim()  : null;
@@ -877,7 +829,7 @@ function processAttendance(rows) {
       const rawIn  = parseMins(inStr);
       const rawOut = parseMins(outStr);
 
-      if (rawIn === null && rawOut === null) return; // ignore totally blank days (e.g. weekend/absent full)
+      if (rawIn === null && rawOut === null) return;
 
       const entryResult = analyseEntry(rawIn);
       const exitResult  = analyseExit(rawOut, rawIn !== null);
@@ -889,7 +841,6 @@ function processAttendance(rows) {
       rawLogs.push({ dateStr, inStr, outStr, rawIn, rawOut, entryResult, exitResult });
     });
 
-    // STEP 2: Evaluate cumulative metrics and flag issues
     let cumulativeLate = 0;
     let totalHDLeaves  = 0;
     const flaggedLogs = [];
@@ -902,19 +853,15 @@ function processAttendance(rows) {
 
       if (lateToday > 0) {
         cumulativeLate += lateToday;
-
         if (flags.includes('HD_IN_AUTO')) {
-            // Already flagged as an automatic HD due to times like >11:30 or >15:00
             totalHDLeaves += 1;
         } else if (cumulativeLate > GRACE_THRESHOLD) {
-            // Reached or passed the 180 threshold -> converts to a HD moving forward
             flags.push('GRACE_EXCEEDED');
             isGraceBreachHD = true;
             totalHDLeaves += 1;
         }
       }
 
-      // Early exit HDs
       if (flags.includes('HD_OUT')) {
           totalHDLeaves += 1;
       }
@@ -925,28 +872,28 @@ function processAttendance(rows) {
       log.lateMins = lateToday;
       log.earlyMins = log.exitResult.earlyMins;
 
-      // Retain for UI and Excel detailed report if there was an issue
       if (flags.length > 0 || log.lateMins > 0 || log.earlyMins > 0) {
         log.rationale = buildRationale(log);
         flaggedLogs.push(log);
       }
-      
       employeeDataLogs.push(log);
     });
 
+    const totalLate     = flaggedLogs.reduce((s, l) => s + l.lateMins, 0);
     const totalLost     = flaggedLogs.reduce((s, l) => s + l.lateMins + l.earlyMins, 0);
     const noPunchCount  = flaggedLogs.filter(l => l.flags.includes('MISSING_PUNCHOUT')).length;
 
     reportBuffer.push({
       'Name':               currentEmp,
+      'Total Late Mins':    totalLate,
       'Total Lost Mins':    totalLost,
-      'Total HD Leaves':    totalHDLeaves, // Storing exactly what was required
+      'Total HD Leaves':    totalHDLeaves,
       'Missing Punch-Out':  noPunchCount,
       'Flagged Logs':       flaggedLogs,
       'All Logs':           employeeDataLogs
     });
 
-    renderCard(currentEmp, flaggedLogs, totalLost, totalHDLeaves, noPunchCount, allCards.length);
+    renderCard(currentEmp, flaggedLogs, totalLate, totalLost, totalHDLeaves, noPunchCount, allCards.length);
     currentEmp = null; inTimeRow = null; outTimeRow = null;
   }
 
@@ -972,12 +919,14 @@ function processAttendance(rows) {
   document.getElementById('reportTitle').textContent = label;
 
   const flagged       = reportBuffer.filter(e => e['Total Lost Mins'] > 0 || e['Total HD Leaves'] > 0).length;
+  const totalLateMins = reportBuffer.reduce((s, e) => s + e['Total Late Mins'], 0);
   const totalMins     = reportBuffer.reduce((s, e) => s + e['Total Lost Mins'], 0);
   const sumHDs        = reportBuffer.reduce((s, e) => s + e['Total HD Leaves'], 0);
   const totalNoPunch  = reportBuffer.reduce((s, e) => s + e['Missing Punch-Out'], 0);
 
   if (reportBuffer.length) {
     document.getElementById('statFlagged').textContent    = flagged;
+    document.getElementById('statLateMins').textContent   = totalLateMins;
     document.getElementById('statMins').textContent       = totalMins;
     document.getElementById('statHDs').textContent        = sumHDs;
     document.getElementById('statNoPunchOut').textContent = totalNoPunch;
@@ -989,8 +938,7 @@ function processAttendance(rows) {
   }
 }
 
-// ── RENDER CARD ──────────────────────────────────────────────────────────────
-function renderCard(name, logs, totalLost, totalHDLeaves, noPunchCount, idx) {
+function renderCard(name, logs, totalLate, totalLost, totalHDLeaves, noPunchCount, idx) {
   const isPerfect = logs.length === 0;
   const card = document.createElement('div');
   card.className = 'emp-card';
@@ -1039,7 +987,7 @@ function renderCard(name, logs, totalLost, totalHDLeaves, noPunchCount, idx) {
 
   const bodyContent = isPerfect ? '<div class="perfect-label">✓ Zero Issues — Perfect Attendance</div>' : logRows;
 
-  const dot1 = logs.length > 0           ? 'f-dot danger' : 'f-dot';
+  const dot1 = logs.length > 0           ? 'f-dot info'   : 'f-dot';
   const dot2 = totalHDLeaves > 0         ? 'f-dot warn'   : 'f-dot';
   const dot3 = noPunchCount > 0          ? 'f-dot purple' : 'f-dot';
 
@@ -1057,16 +1005,16 @@ function renderCard(name, logs, totalLost, totalHDLeaves, noPunchCount, idx) {
     </div>
     <div class="card-body">${bodyContent}</div>
     <div class="card-footer">
-      <span class="f-pill"><span class="${dot1}"></span>${totalLost}m lost</span>
+      <span class="f-pill"><span class="${dot1}"></span>${totalLate}m late</span>
+      <span class="f-pill"><span class="f-dot danger"></span>${totalLost}m lost</span>
       <span class="f-pill"><span class="${dot2}"></span>${totalHDLeaves} HD Leave${totalHDLeaves !== 1 ? 's' : ''}</span>
-      <span class="f-pill"><span class="${dot3}"></span>${noPunchCount} no punch-out</span>
+      <span class="f-pill"><span class="${dot3}"></span>${noPunchCount} missing</span>
     </div>`;
 
   document.getElementById('resultsGrid').appendChild(card);
   allCards.push({ name: name.toLowerCase(), el: card });
 }
 
-// ── SEARCH ────────────────────────────────────────────────────────────────────
 document.getElementById('searchInput').addEventListener('input', function() {
   const q = this.value.trim().toLowerCase();
   let visible = 0;
@@ -1086,16 +1034,13 @@ document.getElementById('searchInput').addEventListener('input', function() {
   noRes.style.display = (q && visible === 0) ? 'block' : 'none';
 });
 
-// ── EXCEL EXPORT (USING EXCELJS FOR RED HIGHLIGHT) ────────────────────────────
 document.getElementById('downloadBtn').addEventListener('click', async () => {
   if (typeof ExcelJS === 'undefined') {
-    alert("Export library is loading. Please wait a moment.");
+    alert("Export library is loading. Please wait.");
     return;
   }
 
   const wb = new ExcelJS.Workbook();
-  
-  // Sheet 1: Detailed Logs 
   const wsLogs = wb.addWorksheet('Detailed Logs');
   
   wsLogs.columns = [
@@ -1109,7 +1054,6 @@ document.getElementById('downloadBtn').addEventListener('click', async () => {
     { header: 'Flags / Rationale', key: 'rationale', width: 60 }
   ];
 
-  // Header Styling
   wsLogs.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
   wsLogs.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0E5774' } };
 
@@ -1130,24 +1074,19 @@ document.getElementById('downloadBtn').addEventListener('click', async () => {
         rationale: log.rationale || log.flags.join(', ')
       });
 
-      // CORE REQUIREMENT: Highlight row purely due to Grace Time exhaustion in RED.
       if (log.isGraceBreachHD) {
         row.eachCell({ includeEmpty: false }, cell => {
-          cell.fill = {
-            type: 'pattern',
-            pattern: 'solid',
-            fgColor: { argb: 'FFFF3B30' } // Bright Red
-          };
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFF3B30' } };
           cell.font = { color: { argb: 'FFFFFFFF' }, bold: true };
         });
       }
     });
   });
 
-  // Sheet 2: Summary Dashboard
   const wsSummary = wb.addWorksheet('Summary');
   wsSummary.columns = [
     { header: 'Employee Name', key: 'name', width: 25 },
+    { header: 'Total Minutes Late', key: 'totLate', width: 20 },
     { header: 'Total HD Leaves', key: 'totHD', width: 20 },
     { header: 'Total Lost Mins', key: 'totLost', width: 18 },
     { header: 'Missing Punch-Outs', key: 'missing', width: 20 },
@@ -1159,6 +1098,7 @@ document.getElementById('downloadBtn').addEventListener('click', async () => {
   reportBuffer.forEach(emp => {
     wsSummary.addRow({
       name: emp.Name,
+      totLate: emp['Total Late Mins'],
       totHD: emp['Total HD Leaves'],
       totLost: emp['Total Lost Mins'],
       missing: emp['Missing Punch-Out']
@@ -1169,7 +1109,7 @@ document.getElementById('downloadBtn').addEventListener('click', async () => {
   const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
-  link.download = 'Attendance_Report_Rules_Updated.xlsx';
+  link.download = 'Attendance_Report_With_Late_Minutes.xlsx';
   link.click();
 });
 </script>
