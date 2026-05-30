@@ -3,217 +3,206 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KASE — Complete Attendance Portal</title>
+<title>KASE — Attendance Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-
-:root {
-  --ink:          #0a1f28;
-  --brand:        #0e5774;
-  --brand-mid:    #1272a0;
-  --brand-glow:   #1a8fc7;
-  --brand-pale:   #e8f4fa;
-  --brand-faint:  #f2f9fc;
-  --accent:       #f0a500;
-  --accent-bg:    #fff8e6;
-  --danger:       #d94f3c;
-  --danger-bg:    #fdf0ee;
-  --success:      #0f8a5f;
-  --success-bg:   #e8f7f2;
-  --warning:      #c47d00;
-  --warning-bg:   #fff3cd;
-  --muted:        #5a7d8c;
-  --border:       #c8dfe9;
-  --border-light: #e2eff5;
-  --surface:      #ffffff;
-  --surface-2:    #f5f9fc;
-  --surface-3:    #edf4f8;
-  --r-sm: 6px; --r-md: 10px; --r-lg: 16px; --r-xl: 24px; --r-pill: 999px;
+:root{
+  --ink:#0a1f28;--brand:#0e5774;--brand-mid:#1272a0;--brand-glow:#1a8fc7;
+  --brand-pale:#e8f4fa;--brand-faint:#f2f9fc;--accent:#f0a500;--accent-bg:#fff8e6;
+  --danger:#d94f3c;--danger-bg:#fdf0ee;--success:#0f8a5f;--success-bg:#e8f7f2;
+  --warning:#c47d00;--warning-bg:#fff3cd;--muted:#5a7d8c;--border:#c8dfe9;
+  --border-light:#e2eff5;--surface:#ffffff;--surface-2:#f5f9fc;--surface-3:#edf4f8;
+  --r-sm:6px;--r-md:10px;--r-lg:16px;--r-xl:24px;--r-pill:999px;
 }
+body{font-family:'Instrument Sans',sans-serif;background:var(--surface-2);color:var(--ink);min-height:100vh;line-height:1.5;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(14,87,116,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(14,87,116,.04) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;z-index:0;}
 
-body {
-  font-family: 'Instrument Sans', sans-serif;
-  background: var(--surface-2);
-  color: var(--ink);
-  min-height: 100vh;
-  line-height: 1.5;
-}
+/* LOGIN */
+#loginPage{display:flex;align-items:center;justify-content:center;min-height:100vh;position:relative;z-index:1;}
+.login-wrap{width:100%;max-width:420px;padding:1rem;}
+.login-brand{text-align:center;margin-bottom:2rem;}
+.login-brand .wordmark{font-family:'Syne',sans-serif;font-weight:800;font-size:2rem;color:var(--brand);letter-spacing:-.02em;}
+.login-brand .sub{font-size:.8rem;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;font-weight:500;margin-top:.2rem;}
+.login-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);padding:2.5rem;box-shadow:0 0 0 6px rgba(14,87,116,.04),0 16px 48px rgba(14,87,116,.10);}
+.login-card h2{font-family:'Syne',sans-serif;font-weight:700;font-size:1.4rem;color:var(--ink);margin-bottom:.4rem;}
+.login-card p{font-size:.85rem;color:var(--muted);margin-bottom:2rem;}
+.field-group{margin-bottom:1.25rem;}
+.field-label{display:block;font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:.45rem;}
+.form-input{width:100%;padding:.8rem 1rem;border:1.5px solid var(--border);border-radius:var(--r-md);font-family:'DM Mono',monospace;font-size:.9rem;color:var(--ink);background:var(--surface);outline:none;transition:border-color .2s,box-shadow .2s;}
+.form-input:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(14,87,116,.12);}
+.btn-login{width:100%;padding:.9rem;background:var(--brand);color:#fff;font-family:'Instrument Sans',sans-serif;font-weight:600;font-size:.95rem;border:none;border-radius:var(--r-md);cursor:pointer;transition:background .2s,transform .15s;letter-spacing:.01em;}
+.btn-login:hover{background:var(--brand-mid);}
+.btn-login:active{transform:scale(.98);}
 
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(14,87,116,.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(14,87,116,.04) 1px, transparent 1px);
-  background-size: 48px 48px;
-  pointer-events: none;
-  z-index: 0;
-}
+/* PORTAL */
+#portalPage{display:none;position:relative;z-index:1;}
+.topnav{background:var(--brand);height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;color:#fff;position:sticky;top:0;z-index:100;border-bottom:1px solid rgba(255,255,255,.08);}
+.nav-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;letter-spacing:-.01em;display:flex;align-items:center;gap:.6rem;}
+.nav-logo .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);display:inline-block;}
+.nav-logo .light{font-weight:400;opacity:.7;}
+.nav-right{display:flex;align-items:center;gap:1rem;}
+.nav-badge{background:rgba(255,255,255,.12);color:rgba(255,255,255,.85);font-size:.7rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:.3rem .75rem;border-radius:var(--r-pill);border:1px solid rgba(255,255,255,.15);}
+.btn-logout{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.9);cursor:pointer;font-size:.8rem;font-family:'Instrument Sans',sans-serif;font-weight:500;padding:.35rem .9rem;border-radius:var(--r-pill);transition:background .2s;}
+.btn-logout:hover{background:rgba(255,255,255,.2);}
+.main-content{max-width:1240px;margin:0 auto;padding:2.5rem 2rem;}
 
-#loginPage { display: flex; align-items: center; justify-content: center; min-height: 100vh; position: relative; z-index: 1; }
-.login-wrap { width: 100%; max-width: 420px; padding: 1rem; }
-.login-brand { text-align: center; margin-bottom: 2rem; }
-.login-brand .wordmark { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 2rem; color: var(--brand); letter-spacing: -.02em; }
-.login-brand .sub { font-size: .8rem; color: var(--muted); letter-spacing: .12em; text-transform: uppercase; font-weight: 500; margin-top: .2rem; }
-.login-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-xl); padding: 2.5rem; box-shadow: 0 0 0 6px rgba(14,87,116,.04), 0 16px 48px rgba(14,87,116,.10); }
-.login-card h2 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.4rem; color: var(--ink); margin-bottom: .4rem; }
-.login-card p { font-size: .85rem; color: var(--muted); margin-bottom: 2rem; }
-.field-group { margin-bottom: 1.25rem; }
-.field-label { display: block; font-size: .75rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: .45rem; }
-.form-input { width: 100%; padding: .8rem 1rem; border: 1.5px solid var(--border); border-radius: var(--r-md); font-family: 'DM Mono', monospace; font-size: .9rem; color: var(--ink); background: var(--surface); outline: none; transition: border-color .2s, box-shadow .2s; }
-.form-input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(14,87,116,.12); }
-.btn-login { width: 100%; padding: .9rem; background: var(--brand); color: #fff; font-family: 'Instrument Sans', sans-serif; font-weight: 600; font-size: .95rem; border: none; border-radius: var(--r-md); cursor: pointer; transition: background .2s, transform .15s; letter-spacing: .01em; }
-.btn-login:hover { background: var(--brand-mid); }
-.btn-login:active { transform: scale(.98); }
+/* HERO */
+.hero-strip{background:var(--brand);border-radius:var(--r-xl);padding:2.2rem 2.5rem;display:flex;justify-content:space-between;align-items:center;gap:2rem;margin-bottom:2rem;position:relative;overflow:hidden;}
+.hero-strip::before{content:'';position:absolute;right:-60px;top:-60px;width:260px;height:260px;border-radius:50%;background:rgba(255,255,255,.05);}
+.hero-strip::after{content:'';position:absolute;right:80px;bottom:-80px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,.04);}
+.hero-text{position:relative;z-index:1;}
+.hero-eyebrow{font-size:.7rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:.5rem;}
+.hero-title{font-family:'Syne',sans-serif;font-weight:700;font-size:1.65rem;color:#fff;line-height:1.15;margin-bottom:.4rem;}
+.hero-sub{font-size:.85rem;color:rgba(255,255,255,.65);}
+.hero-rules-inline{font-size:.72rem;color:rgba(255,255,255,.5);margin-top:.75rem;line-height:1.6;position:relative;z-index:1;}
+.hero-actions{display:flex;gap:.75rem;align-items:center;position:relative;z-index:1;flex-shrink:0;}
+.btn-upload-label{display:inline-flex;align-items:center;gap:.5rem;background:#fff;color:var(--brand);padding:.75rem 1.4rem;border-radius:var(--r-md);font-weight:700;font-size:.88rem;cursor:pointer;transition:transform .15s,box-shadow .2s;box-shadow:0 2px 12px rgba(0,0,0,.12);}
+.btn-upload-label:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(0,0,0,.18);}
 
-#portalPage { display: none; position: relative; z-index: 1; }
+/* TOOLBAR */
+.toolbar-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.75rem;gap:1rem;flex-wrap:wrap;}
+.toolbar-left{display:flex;align-items:center;gap:1.25rem;flex-wrap:wrap;flex:1;}
+.report-meta{display:flex;flex-direction:column;gap:.2rem;}
+.report-label{font-size:.7rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
+.report-title{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;color:var(--ink);}
+.search-wrap{display:none;align-items:center;gap:.5rem;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r-md);padding:.45rem .85rem;transition:border-color .2s,box-shadow .2s;}
+.search-wrap.visible{display:flex;}
+.search-wrap:focus-within{border-color:var(--brand);box-shadow:0 0 0 3px rgba(14,87,116,.10);}
+.search-wrap svg{color:var(--muted);flex-shrink:0;}
+.search-input{border:none;outline:none;font-family:'Instrument Sans',sans-serif;font-size:.875rem;color:var(--ink);background:transparent;width:200px;}
+.search-input::placeholder{color:var(--muted);}
+.btn-download{display:none;align-items:center;gap:.5rem;background:var(--success);color:#fff;padding:.65rem 1.2rem;border-radius:var(--r-md);font-weight:600;font-size:.85rem;border:none;cursor:pointer;font-family:'Instrument Sans',sans-serif;transition:background .2s,transform .15s;}
+.btn-download:hover{background:#0c7a52;}
+.btn-download:active{transform:scale(.97);}
+.btn-download.visible{display:inline-flex;}
 
-.topnav { background: var(--brand); height: 58px; display: flex; align-items: center; justify-content: space-between; padding: 0 2rem; color: #fff; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid rgba(255,255,255,.08); }
-.nav-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.1rem; letter-spacing: -.01em; display: flex; align-items: center; gap: .6rem; }
-.nav-logo .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); display: inline-block; }
-.nav-logo .light { font-weight: 400; opacity: .7; }
-.nav-right { display: flex; align-items: center; gap: 1rem; }
-.nav-badge { background: rgba(255,255,255,.12); color: rgba(255,255,255,.85); font-size: .7rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; padding: .3rem .75rem; border-radius: var(--r-pill); border: 1px solid rgba(255,255,255,.15); }
-.btn-logout { background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.18); color: rgba(255,255,255,.9); cursor: pointer; font-size: .8rem; font-family: 'Instrument Sans', sans-serif; font-weight: 500; padding: .35rem .9rem; border-radius: var(--r-pill); transition: background .2s; }
-.btn-logout:hover { background: rgba(255,255,255,.2); }
+/* STATS */
+.stats-strip{display:none;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem;}
+.stats-strip.visible{display:grid;}
+.stat-card{background:var(--surface);border:1px solid var(--border-light);border-radius:var(--r-lg);padding:1.25rem 1.5rem;display:flex;flex-direction:column;gap:.3rem;}
+.stat-card .s-label{font-size:.7rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
+.stat-card .s-value{font-family:'Syne',sans-serif;font-weight:700;font-size:2rem;color:var(--brand);line-height:1;}
+.stat-card .s-desc{font-size:.78rem;color:var(--muted);}
 
-.main-content { max-width: 1240px; margin: 0 auto; padding: 2.5rem 2rem; }
+/* GRID */
+#resultsGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:1.25rem;}
 
-.hero-strip { background: var(--brand); border-radius: var(--r-xl); padding: 2.2rem 2.5rem; display: flex; justify-content: space-between; align-items: center; gap: 2rem; margin-bottom: 2rem; position: relative; overflow: hidden; flex-wrap: wrap; }
-.hero-strip::before { content: ''; position: absolute; right: -60px; top: -60px; width: 260px; height: 260px; border-radius: 50%; background: rgba(255,255,255,.05); }
-.hero-strip::after { content: ''; position: absolute; right: 80px; bottom: -80px; width: 180px; height: 180px; border-radius: 50%; background: rgba(255,255,255,.04); }
-.hero-text { position: relative; z-index: 1; }
-.hero-eyebrow { font-size: .7rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: rgba(255,255,255,.55); margin-bottom: .5rem; }
-.hero-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.65rem; color: #fff; line-height: 1.15; margin-bottom: .4rem; }
-.hero-sub { font-size: .85rem; color: rgba(255,255,255,.65); }
+/* CARD */
+.emp-card{background:var(--surface);border:1px solid var(--border-light);border-radius:var(--r-lg);overflow:hidden;display:flex;flex-direction:column;transition:box-shadow .2s,transform .2s;}
+.emp-card:hover{box-shadow:0 8px 32px rgba(14,87,116,.10);transform:translateY(-2px);}
+.card-header{padding:1.1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;border-bottom:1px solid var(--border-light);background:var(--brand-faint);}
+.emp-avatar{width:40px;height:40px;border-radius:50%;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:.9rem;flex-shrink:0;}
+.emp-info{flex:1;min-width:0;}
+.emp-name{font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;color:var(--brand);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.emp-dept{font-size:.72rem;color:var(--muted);margin-top:.1rem;}
+.mins-pill{text-align:center;background:var(--brand);color:#fff;border-radius:var(--r-md);padding:.35rem .7rem;flex-shrink:0;}
+.mins-num{font-family:'DM Mono',monospace;font-weight:500;font-size:1.15rem;line-height:1;display:block;}
+.mins-lbl{font-size:.52rem;letter-spacing:.1em;text-transform:uppercase;opacity:.75;}
 
-.hero-rules { position: relative; z-index: 1; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12); border-radius: var(--r-md); padding: .85rem 1.1rem; font-size: .72rem; color: rgba(255,255,255,.75); line-height: 1.6; min-width: 310px; }
-.hero-rules b { color: rgba(255,255,255,.95); font-weight: 600; }
+/* PERFECT CARD */
+.perfect-card-header{background:var(--success-bg);border-bottom-color:rgba(15,138,95,.12);}
+.perfect-card-header .emp-name{color:var(--success);}
+.perfect-card-header .emp-avatar{background:var(--success);}
+.perfect-card-header .mins-pill{background:var(--success);}
 
-.hero-actions { display: flex; gap: .75rem; align-items: center; position: relative; z-index: 1; flex-shrink: 0; }
-.btn-upload-label { display: inline-flex; align-items: center; gap: .5rem; background: #fff; color: var(--brand); padding: .75rem 1.4rem; border-radius: var(--r-md); font-weight: 700; font-size: .88rem; cursor: pointer; transition: transform .15s, box-shadow .2s; box-shadow: 0 2px 12px rgba(0,0,0,.12); }
-.btn-upload-label:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(0,0,0,.18); }
-.btn-upload-label svg { flex-shrink: 0; }
+/* LOG ROWS */
+.card-body{padding:.5rem 0;flex:1;}
+.log-row{display:flex;justify-content:space-between;align-items:center;padding:.5rem 1.25rem;border-bottom:1px solid var(--surface-3);gap:.6rem;transition:background .15s;font-size:.8rem;}
+.log-row:last-child{border-bottom:none;}
+.log-row:hover{filter:brightness(.97);}
 
-.toolbar-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.75rem; gap: 1rem; flex-wrap: wrap; }
-.toolbar-left { display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap; flex: 1; }
-.report-meta { display: flex; flex-direction: column; gap: .2rem; }
-.report-label { font-size: .7rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
-.report-title { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 700; color: var(--ink); }
+.row-ok{background:var(--success-bg);}
+.row-wo{background:#f0f4f8;opacity:.7;}
+.row-wo:hover{opacity:1;}
+.row-absent{background:#fff0f0;}
+.row-leave{background:#f0f0ff;}
+.row-late{background:#fff8e6;}
+.row-hd{background:#fde8e8;}
+.row-grace-hd{background:#ff000015;}
+.row-no-punch{background:#f5f0ff;}
+.row-single-punch{background:#fff5e6;}
+.row-early{background:#fef3f0;}
 
-.search-wrap { display: none; align-items: center; gap: .5rem; background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--r-md); padding: .45rem .85rem; transition: border-color .2s, box-shadow .2s; }
-.search-wrap.visible { display: flex; }
-.search-wrap:focus-within { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(14,87,116,.10); }
-.search-wrap svg { color: var(--muted); flex-shrink: 0; }
-.search-input { border: none; outline: none; font-family: 'Instrument Sans', sans-serif; font-size: .875rem; color: var(--ink); background: transparent; width: 200px; }
-.search-input::placeholder { color: var(--muted); }
+/* Tags */
+.log-date{color:var(--muted);font-size:.75rem;flex-shrink:0;min-width:54px;font-weight:500;}
+.log-tags{display:flex;align-items:center;gap:.3rem;flex-shrink:0;flex-wrap:wrap;}
+.tag{font-size:.58rem;font-weight:700;padding:2px 6px;border-radius:4px;letter-spacing:.05em;text-transform:uppercase;white-space:nowrap;}
+.tag-ok{background:var(--success-bg);color:var(--success);border:1px solid rgba(15,138,95,.2);}
+.tag-wo{background:#ecf0f4;color:#5a6a7a;border:1px solid rgba(90,106,122,.2);}
+.tag-absent{background:#ffe0e0;color:#8a2020;border:1px solid rgba(180,40,40,.22);}
+.tag-leave{background:#e0e0ff;color:#202080;border:1px solid rgba(40,40,180,.22);}
+.tag-late{background:#fff3cd;color:#7a5c00;border:1px solid rgba(240,165,0,.3);}
+.tag-hd-in{background:#fde8e8;color:#8a2020;border:1px solid rgba(217,79,60,.25);}
+.tag-hd-out{background:#fde8e8;color:#8a2020;border:1px solid rgba(217,79,60,.25);}
+.tag-grace-hd{background:#ff000020;color:#800000;border:1px solid rgba(200,0,0,.35);font-weight:800;}
+.tag-early{background:#fff0e6;color:#8a4000;border:1px solid rgba(200,80,0,.2);}
+.tag-no-punch-in{background:#ede0ff;color:#5a00a8;border:1px solid rgba(120,40,200,.25);}
+.tag-no-punch-out{background:#ede0ff;color:#5a00a8;border:1px solid rgba(120,40,200,.25);}
+.tag-single-punch{background:#fff0d0;color:#7a4a00;border:1px solid rgba(180,100,0,.25);}
+.tag-pm-late{background:#fce4ec;color:#8a1040;border:1px solid rgba(180,30,80,.22);}
+.tag-hd-ot{background:#fde8e8;color:#8a2020;border:1px solid rgba(217,79,60,.25);}
 
-.btn-download { display: none; align-items: center; gap: .5rem; background: var(--success); color: #fff; padding: .65rem 1.2rem; border-radius: var(--r-md); font-weight: 600; font-size: .85rem; border: none; cursor: pointer; font-family: 'Instrument Sans', sans-serif; transition: background .2s, transform .15s; }
-.btn-download:hover { background: #0c7a52; }
-.btn-download:active { transform: scale(.97); }
-.btn-download.visible { display: inline-flex; }
+.log-right{display:flex;align-items:center;gap:.4rem;flex:1;justify-content:flex-end;}
+.t-in{font-family:'DM Mono',monospace;font-size:.78rem;font-weight:500;}
+.t-in.late{color:var(--danger);}
+.t-in.ok{color:var(--muted);}
+.t-in.missing{color:#8b00cc;font-style:italic;}
+.t-out{font-family:'DM Mono',monospace;font-size:.78rem;font-weight:500;}
+.t-out.early{color:var(--warning);}
+.t-out.hd{color:var(--danger);}
+.t-out.ok{color:var(--muted);}
+.t-out.missing{color:#8b00cc;font-style:italic;}
+.t-sep{color:var(--border);font-size:.75rem;margin:0 1px;}
+.t-lost{font-family:'DM Mono',monospace;font-size:.7rem;color:var(--danger);background:var(--danger-bg);padding:1px 5px;border-radius:3px;}
+.t-penalty{font-family:'DM Mono',monospace;font-size:.7rem;color:#800000;background:#ff000015;padding:1px 5px;border-radius:3px;font-weight:700;}
 
-.stats-strip { display: none; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem; }
-.stats-strip.visible { display: grid; }
-.stat-card { background: var(--surface); border: 1px solid var(--border-light); border-radius: var(--r-lg); padding: 1.25rem 1.5rem; display: flex; flex-direction: column; gap: .3rem; }
-.stat-card .s-label { font-size: .7rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
-.stat-card .s-value { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 2rem; color: var(--brand); line-height: 1; }
-.stat-card .s-desc { font-size: .78rem; color: var(--muted); }
+/* Rationale */
+.log-rationale{font-size:.68rem;color:var(--muted);padding:.3rem 1.25rem;font-style:italic;border-bottom:1px solid var(--surface-3);line-height:1.4;}
+.log-rationale:last-child{border-bottom:none;}
 
-#resultsGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 1.25rem; }
+/* FOOTER */
+.card-footer{background:var(--surface-3);padding:.75rem 1.25rem;border-top:1px solid var(--border-light);font-size:.72rem;color:var(--muted);display:flex;justify-content:space-between;gap:.75rem;flex-wrap:wrap;}
+.f-pill{display:flex;align-items:center;gap:.35rem;font-weight:600;}
+.f-dot{width:6px;height:6px;border-radius:50%;background:var(--border);}
+.f-dot.warn{background:var(--accent);}
+.f-dot.danger{background:var(--danger);}
+.f-dot.red{background:#cc0000;}
+.f-dot.purple{background:#8b00cc;}
 
-.emp-card { background: var(--surface); border: 1px solid var(--border-light); border-radius: var(--r-lg); overflow: hidden; display: flex; flex-direction: column; transition: box-shadow .2s, transform .2s; }
-.emp-card:hover { box-shadow: 0 8px 32px rgba(14,87,116,.10); transform: translateY(-2px); }
+/* Summary row */
+.card-summary{background:#f0f7ff;border-top:1px solid var(--border-light);padding:.65rem 1.25rem;display:flex;gap:1.5rem;flex-wrap:wrap;font-size:.75rem;}
+.sum-item{display:flex;flex-direction:column;gap:.1rem;}
+.sum-label{font-size:.62rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);}
+.sum-value{font-family:'DM Mono',monospace;font-weight:700;font-size:.95rem;color:var(--ink);}
+.sum-value.red{color:#cc0000;}
+.sum-value.warn{color:var(--warning);}
+.sum-value.ok{color:var(--success);}
 
-.card-header { padding: 1.1rem 1.25rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; border-bottom: 1px solid var(--border-light); background: var(--brand-faint); }
-.emp-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--brand); color: #fff; display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-weight: 700; font-size: .9rem; flex-shrink: 0; }
-.emp-info { flex: 1; min-width: 0; }
-.emp-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: .95rem; color: var(--brand); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.emp-dept { font-size: .72rem; color: var(--muted); margin-top: .1rem; }
-.mins-pill { text-align: center; background: var(--brand); color: #fff; border-radius: var(--r-md); padding: .5rem 1rem; flex-shrink: 0; display: flex; flex-direction: column; gap: .3rem; }
-.mins-num { font-family: 'DM Mono', monospace; font-weight: 600; font-size: 1.3rem; line-height: 1; display: block; }
-.mins-lbl { font-size: .5rem; letter-spacing: .1em; text-transform: uppercase; opacity: .8; font-weight: 500; }
-.mins-sub { font-size: .65rem; color: rgba(255,255,255,.9); font-weight: 600; padding-top: .2rem; border-top: 1px solid rgba(255,255,255,.2); }
+/* EMPTY */
+.empty-state{grid-column:1/-1;text-align:center;padding:4rem 2rem;}
+.empty-icon{width:64px;height:64px;border-radius:50%;background:var(--brand-pale);display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;}
+.empty-state p{color:var(--muted);font-size:.9rem;}
+.no-results{grid-column:1/-1;text-align:center;padding:3rem 2rem;color:var(--muted);font-size:.9rem;}
 
-.perfect-card-header { background: var(--success-bg); border-bottom-color: rgba(15,138,95,.12); }
-.perfect-card-header .emp-name { color: var(--success); }
-.perfect-card-header .emp-avatar { background: var(--success); }
-.perfect-card-header .mins-pill { background: var(--success); }
-.perfect-label { display: flex; align-items: center; gap: .5rem; padding: .85rem; color: var(--success); font-size: .85rem; font-weight: 600; }
+/* SPINNER */
+@keyframes spin{to{transform:rotate(360deg);}}
+.spinner{width:18px;height:18px;border:2px solid rgba(14,87,116,.2);border-top-color:var(--brand);border-radius:50%;animation:spin .7s linear infinite;display:none;}
+.spinner.active{display:block;}
 
-.card-body { padding: .5rem 0; flex: 1; }
-.log-row { display: flex; justify-content: space-between; align-items: center; padding: .6rem 1.25rem; border-bottom: 1px solid var(--surface-3); gap: .6rem; transition: background .15s; }
-.log-row:last-child { border-bottom: none; }
-.log-row:hover { background: var(--brand-faint); }
-
-.log-row.hd-normal { background: #fff8e6; }
-.log-row.hd-normal:hover { background: #fff0cc; }
-.log-row.grace-expired { background: #ffcdd2; }
-.log-row.grace-expired:hover { background: #ef9a9a; }
-.log-row.no-punchin { background: #f0e6ff; }
-.log-row.no-punchin:hover { background: #e8d9ff; }
-.log-row.on-time { background: #e8f7f2; }
-.log-row.on-time:hover { background: #d4f0e8; }
-.log-row.leave-day { background: #f5f5f5; }
-.log-row.leave-day:hover { background: #efefef; }
-
-.log-date { color: var(--muted); font-size: .8rem; flex-shrink: 0; min-width: 52px; }
-.log-tags { display: flex; align-items: center; gap: .35rem; flex-shrink: 0; flex-wrap: wrap; }
-
-.tag { font-size: .6rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; letter-spacing: .06em; text-transform: uppercase; }
-.tag-am-late { background: #e3f2fd; color: #0a4a8a; border: 1px solid rgba(20,100,180,.22); }
-.tag-am-hd { background: #fff8e6; color: #8a6000; border: 1px solid rgba(240,165,0,.22); }
-.tag-pm-late { background: #fce4ec; color: #8a1040; border: 1px solid rgba(180,30,80,.22); }
-.tag-pm-hd { background: #ffe0b2; color: #7a3a00; border: 1px solid rgba(200,100,0,.3); }
-.tag-grace-hd { background: #ffcdd2; color: #c62828; border: 1px solid rgba(220,40,40,.4); font-weight: 800; }
-.tag-early { background: #c8e6c9; color: #1b5e20; border: 1px solid rgba(46,125,50,.3); }
-.tag-no-in { background: #f3e5f5; color: #6a1b9a; border: 1px solid rgba(106,27,154,.25); }
-.tag-on-time { background: #e8f5e9; color: #2e7d32; border: 1px solid rgba(46,125,50,.3); }
-.tag-leave { background: #eceff1; color: #424242; border: 1px solid rgba(66,66,66,.25); }
-
-.log-right { display: flex; align-items: center; gap: .4rem; flex: 1; justify-content: flex-end; }
-.log-time-in { color: var(--danger); font-weight: 600; font-family: 'DM Mono', monospace; font-size: .8rem; }
-.log-time-in.ontime { color: var(--muted); font-weight: 400; }
-.log-time-out { color: var(--accent); font-weight: 600; font-family: 'DM Mono', monospace; font-size: .8rem; }
-.log-time-out.ontime { color: var(--muted); font-weight: 400; }
-.log-time-out.missing { color: #8b00cc; font-style: italic; }
-.log-sep { color: var(--border); font-size: .8rem; }
-.log-lost { color: var(--muted); font-size: .72rem; font-family: 'DM Mono', monospace; white-space: nowrap; }
-
-.log-rationale { font-size: .68rem; color: var(--muted); padding: .4rem 1.25rem; font-style: italic; border-bottom: 1px solid var(--surface-3); line-height: 1.4; background: rgba(14,87,116,.02); }
-.log-rationale:last-child { border-bottom: none; }
-
-.card-footer { background: var(--surface-3); padding: .7rem 1.25rem; border-top: 1px solid var(--border-light); font-size: .75rem; font-weight: 600; color: var(--muted); display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
-.f-pill { display: flex; align-items: center; gap: .35rem; }
-.f-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border); }
-.f-dot.warn { background: var(--accent); }
-.f-dot.danger { background: var(--danger); }
-.f-dot.purple { background: #8b00cc; }
-.f-dot.red { background: #d32f2f; }
-
-.empty-state { grid-column: 1/-1; text-align: center; padding: 4rem 2rem; }
-.empty-icon { width: 64px; height: 64px; border-radius: 50%; background: var(--brand-pale); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem; }
-.empty-state p { color: var(--muted); font-size: .9rem; }
-.no-results { grid-column: 1/-1; text-align: center; padding: 3rem 2rem; color: var(--muted); font-size: .9rem; }
-
-@keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-.emp-card { animation: fadeUp .3s ease both; }
-@keyframes spin { to { transform: rotate(360deg); } }
-.spinner { width: 18px; height: 18px; border: 2px solid rgba(14,87,116,.2); border-top-color: var(--brand); border-radius: 50%; animation: spin .7s linear infinite; display: none; }
-.spinner.active { display: block; }
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+.emp-card{animation:fadeUp .3s ease both;}
+::-webkit-scrollbar{width:6px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
 </style>
 </head>
 <body>
 
-<!-- ══ LOGIN ══ -->
+<!-- LOGIN -->
 <div id="loginPage">
   <div class="login-wrap">
     <div class="login-brand">
@@ -234,12 +223,11 @@ body::before {
   </div>
 </div>
 
-<!-- ══ PORTAL ══ -->
+<!-- PORTAL -->
 <div id="portalPage">
   <nav class="topnav">
     <div class="nav-logo">
-      <span class="dot"></span>
-      KASE <span class="light">Attendance</span>
+      <span class="dot"></span>KASE <span class="light">Attendance</span>
     </div>
     <div class="nav-right">
       <span class="nav-badge">Admin</span>
@@ -248,29 +236,23 @@ body::before {
   </nav>
 
   <div class="main-content">
-
     <div class="hero-strip">
       <div class="hero-text">
-        <div class="hero-eyebrow">Complete Attendance Tracking</div>
-        <div class="hero-title">Monthly Report</div>
-        <div class="hero-sub">Upload a report to view complete month attendance with grace period & penalty analysis.</div>
-      </div>
-      <div class="hero-rules">
-        <b>SHIFT RULES (UPDATED)</b><br>
-        🕙 AM: 10:15–13:00 | Late >10:15 | HD >11:30<br>
-        🍽 Lunch: 13:00–13:45<br>
-        🕑 PM: 13:45–17:15 | Late >13:45 | HD >15:00<br>
-        ⚠️ Grace: 180 min cumulative → HD after<br>
-        🔴 Missing punch-in = No late mins counted<br>
-        📅 All days of month displayed in Excel
+        <div class="hero-eyebrow">Attendance Intelligence</div>
+        <div class="hero-title">Monthly Insights</div>
+        <div class="hero-sub">Upload a report to analyse all days — late arrivals, early exits, half-days & leaves.</div>
+        <div class="hero-rules-inline">
+          🕙 AM: 10:15–13:00 &nbsp;·&nbsp; 🍽 Lunch: 13:00–13:45 &nbsp;·&nbsp; 🕑 PM: 13:45–17:15
+          &nbsp;·&nbsp; ⚠️ After 11:30 → HD In &nbsp;·&nbsp; ⚠️ Before 15:00 → HD Out
+          &nbsp;·&nbsp; 🔴 &gt;180 min grace → Half-Day Penalty &nbsp;·&nbsp; 🟣 Single punch = flagged
+        </div>
       </div>
       <div class="hero-actions">
         <div class="spinner" id="uploadSpinner"></div>
         <label for="fileInput" class="btn-upload-label">
           <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
             <path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M16 8l-4-4-4 4M12 4v12" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          Upload XLS
+          </svg>Upload XLS
         </label>
         <input type="file" id="fileInput" accept=".xls,.xlsx" style="display:none">
       </div>
@@ -292,31 +274,30 @@ body::before {
       <button id="downloadBtn" class="btn-download">
         <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
           <path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M8 12l4 4 4-4M12 4v12" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        Export Full Month XLSX
+        </svg>Export XLSX
       </button>
     </div>
 
     <div class="stats-strip" id="statsStrip">
       <div class="stat-card">
-        <div class="s-label">Flagged Employees</div>
+        <div class="s-label">Employees Flagged</div>
         <div class="s-value" id="statFlagged">0</div>
-        <div class="s-desc">With issues this month</div>
+        <div class="s-desc">With at least one issue</div>
       </div>
       <div class="stat-card">
         <div class="s-label">Total Late Minutes</div>
-        <div class="s-value" id="statLateMins">0</div>
-        <div class="s-desc">All employees combined</div>
+        <div class="s-value" id="statMins">0</div>
+        <div class="s-desc">Late entry combined</div>
       </div>
       <div class="stat-card">
-        <div class="s-label">Half Days Total</div>
-        <div class="s-value" id="statHDs">0</div>
-        <div class="s-desc">Auto + grace-exhausted</div>
+        <div class="s-label">Penalty Half-Days</div>
+        <div class="s-value" id="statPenalty">0</div>
+        <div class="s-desc">Grace limit exceeded</div>
       </div>
       <div class="stat-card">
-        <div class="s-label">Penalty Days</div>
-        <div class="s-value" id="statPenalties">0</div>
-        <div class="s-desc">Days after grace expires</div>
+        <div class="s-label">Single Punch Days</div>
+        <div class="s-value" id="statSingle">0</div>
+        <div class="s-desc">Missing in or out</div>
       </div>
     </div>
 
@@ -327,735 +308,530 @@ body::before {
             <path d="M9 12h6M9 16h6M7 8h10M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </div>
-        <p>Upload an XLS file to see complete attendance insights.</p>
+        <p>Upload an XLS file to see attendance insights.</p>
       </div>
     </div>
-
   </div>
 </div>
 
 <script>
-const APP_PASS = "admin123";
+// ═══════════════════════════════════════════════════════════════════
+//  KASE ATTENDANCE — RULES
+//  Shift: 10:15 → 17:15   Lunch: 13:00 → 13:45
+//  HD_IN  cut: 11:30  (arrive after this = Half Day)
+//  HD_OUT cut: 15:00  (leave before this = Half Day)
+//  Grace: 180 cumulative late minutes → every subsequent late day = Half Day Penalty
+//
+//  BUG FIX: If punch-in exists but is after 17:00 AND no punch-out,
+//           treat as "No Punch In" (single punch anomaly). 
+//           More generally: if only ONE punch exists, flag as Single Punch.
+//  BUG FIX: No punch-in + punch-out → "No Punch In" flag, late mins = 0
+// ═══════════════════════════════════════════════════════════════════
 
-// ═══════════════════════════════════════════════════════════════════════════
-//  SHIFT RULES (COMPLETE MONTH VIEW WITH GRACE PERIOD)
-// ═══════════════════════════════════════════════════════════════════════════
+const APP_PASS    = "admin123";
+const SHIFT_START = 10*60+15;   // 615
+const SHIFT_END   = 17*60+15;   // 1035
+const LUNCH_START = 13*60;      // 780
+const LUNCH_END   = 13*60+45;   // 825
+const HD_IN_CUT   = 11*60+30;   // 690  (after this → HD_IN)
+const HD_OUT_CUT  = 15*60;      // 900  (before this → HD_OUT)
+const GRACE_MINS  = 180;
 
-const AM_START       = 10 * 60 + 15;   // 615 = 10:15
-const AM_HD_CUTOFF   = 11 * 60 + 30;   // 690 = 11:30
-const AM_END         = 13 * 60;         // 780 = 13:00
-
-const LUNCH_START    = 13 * 60;         // 780 = 13:00
-const LUNCH_END      = 13 * 60 + 45;   // 825 = 13:45
-
-const PM_START       = 13 * 60 + 45;   // 825 = 13:45
-const PM_HD_CUTOFF   = 15 * 60;         // 900 = 15:00
-const PM_END         = 17 * 60 + 15;   // 1035 = 17:15
-
-const GRACE_THRESHOLD = 180; // 180 minutes cumulative
-
-// ── AUTH ─────────────────────────────────────────────────────────────────────
+// AUTH
 if (sessionStorage.getItem('auth') === 'true') showPortal();
-
 document.getElementById('loginForm').addEventListener('submit', e => {
   e.preventDefault();
   if (document.getElementById('passwordInput').value === APP_PASS) {
-    sessionStorage.setItem('auth', 'true');
-    showPortal();
+    sessionStorage.setItem('auth','true'); showPortal();
   } else {
     const inp = document.getElementById('passwordInput');
-    inp.style.borderColor = 'var(--danger)';
-    inp.style.boxShadow = '0 0 0 3px rgba(217,79,60,.12)';
-    setTimeout(() => { inp.style.borderColor = ''; inp.style.boxShadow = ''; }, 1200);
+    inp.style.borderColor='var(--danger)'; inp.style.boxShadow='0 0 0 3px rgba(217,79,60,.12)';
+    setTimeout(()=>{inp.style.borderColor='';inp.style.boxShadow='';},1200);
   }
 });
-
-document.getElementById('logoutBtn').addEventListener('click', () => {
-  sessionStorage.removeItem('auth');
-  location.reload();
-});
-
-function showPortal() {
-  document.getElementById('loginPage').style.display = 'none';
-  document.getElementById('portalPage').style.display = 'block';
-}
+document.getElementById('logoutBtn').addEventListener('click',()=>{sessionStorage.removeItem('auth');location.reload();});
+function showPortal(){document.getElementById('loginPage').style.display='none';document.getElementById('portalPage').style.display='block';}
 
 let reportBuffer = [];
 let allCards = [];
-let monthStart = null;
-let monthDays = 0;
 
-// ── HELPERS ──────────────────────────────────────────────────────────────────
-function parseMins(t) {
-  if (!t || typeof t !== 'string') return null;
-  const s = t.trim();
-  if (!s.includes(':')) return null;
-  const [h, m] = s.split(':').map(Number);
-  if (isNaN(h) || isNaN(m)) return null;
-  return h * 60 + m;
-}
-
-function fmtMins(m) {
-  const hh = Math.floor(m / 60);
-  const mm = m % 60;
-  return hh > 0 ? `${hh}h ${mm}m` : `${mm}m`;
-}
-
-function initials(name) {
-  return name.split(' ').filter(Boolean).map(w => w[0]).slice(0, 2).join('').toUpperCase();
-}
-
-function isWeekend(date) {
-  const day = date.getDay();
-  return day === 0 || day === 6;
-}
-
-// ── ANALYZE SINGLE DAY ────────────────────────────────────────────────────────
-function analyzeDay(rawIn, rawOut) {
-  let lateMins = 0;
-  let isHD = false;
-  let flags = [];
-  let shift = null;
-
-  // *** BUG FIX: Missing Punch-In ***
-  // If punch-in is NULL but punch-out has data, do NOT calculate late mins
-  if (rawIn === null && rawOut !== null) {
-    return {
-      lateMins: 0,
-      isHD: false,
-      flags: ['NO_PUNCH_IN'],
-      shift: null,
-      rationale: 'No punch-in recorded (only punch-out exists). Status: Missed Punch.'
-    };
-  }
-
-  // If both are null, it's a leave/absent day
-  if (rawIn === null && rawOut === null) {
-    return {
-      lateMins: 0,
-      isHD: false,
-      flags: [],
-      shift: null,
-      rationale: null // Leave/absent
-    };
-  }
-
-  // Determine shift
-  if (rawIn >= PM_START) {
-    // PM Shift
-    shift = 'PM';
-    if (rawIn <= PM_START) {
-      // On time
-    } else if (rawIn > PM_HD_CUTOFF) {
-      lateMins = rawIn - PM_START;
-      isHD = true;
-      flags.push('PM_HD');
-    } else {
-      lateMins = rawIn - PM_START;
-      flags.push('PM_LATE');
-    }
-
-    if (rawOut !== null && rawOut < PM_END) {
-      if (rawOut < PM_HD_CUTOFF) {
-        isHD = true;
-        flags.push('EARLY_PM_HD');
-      } else {
-        const shortMins = PM_END - rawOut;
-        lateMins += shortMins;
-        flags.push('EARLY_PM');
-      }
-    }
-  } else if (rawIn < LUNCH_START) {
-    // AM Shift
-    shift = 'AM';
-    if (rawIn <= AM_START) {
-      // On time
-    } else if (rawIn > AM_HD_CUTOFF) {
-      lateMins = rawIn - AM_START;
-      isHD = true;
-      flags.push('AM_HD');
-    } else {
-      lateMins = rawIn - AM_START;
-      flags.push('AM_LATE');
-    }
-
-    if (rawOut !== null && rawOut < AM_END) {
-      const shortMins = AM_END - rawOut;
-      lateMins += shortMins;
-      flags.push('EARLY_AM');
-    }
-  } else {
-    // Lunch window punch-in - skip
-    return {
-      lateMins: 0,
-      isHD: false,
-      flags: [],
-      shift: null,
-      rationale: null
-    };
-  }
-
-  if (rawIn !== null && rawOut === null) {
-    flags.push('MISSING_PUNCHOUT');
-  }
-
-  let rationale = null;
-  if (flags.length > 0 || lateMins > 0) {
-    const parts = [];
-    if (flags.includes('AM_LATE') && lateMins > 0)
-      parts.push(`AM: Late ${fmtMins(lateMins)}`);
-    if (flags.includes('AM_HD'))
-      parts.push(`AM: Arrived >11:30 → HD`);
-    if (flags.includes('EARLY_AM') && lateMins > 0)
-      parts.push(`AM: Left early, short ${fmtMins(lateMins)}`);
-    if (flags.includes('PM_LATE') && lateMins > 0)
-      parts.push(`PM: Late ${fmtMins(lateMins)}`);
-    if (flags.includes('PM_HD'))
-      parts.push(`PM: Arrived >15:00 → HD`);
-    if (flags.includes('EARLY_PM') && lateMins > 0)
-      parts.push(`PM: Left early, short ${fmtMins(lateMins)}`);
-    if (flags.includes('EARLY_PM_HD'))
-      parts.push(`PM: Left <15:00 → HD`);
-    if (flags.includes('MISSING_PUNCHOUT'))
-      parts.push(`Missing punch-out`);
-    rationale = parts.join('; ');
-  }
-
-  return { lateMins, isHD, flags, shift, rationale };
-}
-
-// ── EXTRACT MONTH/YEAR ────────────────────────────────────────────────────────
-function extractMonthYear(rows) {
-  for (let i = 0; i < Math.min(6, rows.length); i++) {
-    const joined = (rows[i] || []).filter(Boolean).join(' ');
-    const match = joined.match(/([A-Z][a-z]{2})\s+(\d{4})/);
-    if (match) {
-      const d = new Date(`${match[1]} 1, ${match[2]}`);
-      const nextMonth = new Date(d.getFullYear(), d.getMonth() + 1, 1);
-      const lastDay = new Date(nextMonth.getTime() - 1).getDate();
-      return {
-        baseDate: d,
-        label: d.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }),
-        lastDay: lastDay
-      };
-    }
-  }
-  const d = new Date();
-  const nextMonth = new Date(d.getFullYear(), d.getMonth() + 1, 1);
-  const lastDay = new Date(nextMonth.getTime() - 1).getDate();
-  return {
-    baseDate: d,
-    label: d.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }),
-    lastDay: lastDay
+// FILE UPLOAD
+document.getElementById('fileInput').addEventListener('change', function(e){
+  const file = e.target.files[0]; if(!file) return;
+  document.getElementById('uploadSpinner').classList.add('active');
+  const reader = new FileReader();
+  reader.onload = function(evt){
+    const wb = XLSX.read(new Uint8Array(evt.target.result),{type:'array'});
+    const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:null});
+    setTimeout(()=>{processAttendance(rows);document.getElementById('uploadSpinner').classList.remove('active');},200);
   };
+  reader.readAsArrayBuffer(file);
+});
+
+// TIME HELPERS
+function parseMins(t){
+  if(!t||typeof t!=='string') return null;
+  const s=t.trim(); if(!s.includes(':')) return null;
+  const[h,m]=s.split(':').map(Number);
+  if(isNaN(h)||isNaN(m)) return null;
+  return h*60+m;
+}
+function fmtMins(m){
+  if(m<=0) return '0m';
+  const hh=Math.floor(m/60),mm=m%60;
+  return hh>0?`${hh}h${mm>0?' '+mm+'m':''}`:mm+'m';
+}
+function initials(name){return name.split(' ').filter(Boolean).map(w=>w[0]).slice(0,2).join('').toUpperCase();}
+
+function extractMonthYear(rows){
+  for(let i=0;i<Math.min(6,rows.length);i++){
+    const joined=(rows[i]||[]).filter(Boolean).join(' ');
+    const match=joined.match(/([A-Z][a-z]{2})\s+(\d{1,2})\s+(\d{4})/);
+    if(match){const d=new Date(`${match[1]} ${match[2]} ${match[3]}`);return{baseDate:d,label:d.toLocaleDateString('en-GB',{month:'long',year:'numeric'})};}
+  }
+  return{baseDate:new Date(),label:'Unknown Month'};
 }
 
-function buildDayMap(rows) {
-  let bestRow = -1, bestCount = 0;
-  for (let i = 0; i < Math.min(15, rows.length); i++) {
-    const nums = (rows[i] || []).filter(c => !isNaN(parseInt(String(c).split(' ')[0], 10)));
-    if (nums.length > bestCount) {
-      bestCount = nums.length;
-      bestRow = i;
+function buildDayMap(rows){
+  // Find the "Days" row
+  let bestRow=-1,bestCount=0;
+  for(let i=0;i<Math.min(15,rows.length);i++){
+    const r=rows[i]||[];
+    if(String(r[0]||'').trim()==='Days'){
+      // Parse day labels like "1 F", "2 St", etc.
+      const map={};
+      r.forEach((cell,idx)=>{
+        if(!cell) return;
+        const n=parseInt(String(cell).split(' ')[0],10);
+        if(!isNaN(n)&&n>=1&&n<=31) map[idx]=n;
+      });
+      if(Object.keys(map).length>bestCount){bestCount=Object.keys(map).length;bestRow=i;}
+    } else {
+      const nums=(r).filter(c=>!isNaN(parseInt(String(c).split(' ')[0],10)));
+      if(nums.length>bestCount){bestCount=nums.length;bestRow=i;}
     }
   }
-  const map = {};
-  if (bestRow !== -1) {
-    (rows[bestRow] || []).forEach((cell, idx) => {
-      const n = parseInt(String(cell).split(' ')[0], 10);
-      if (!isNaN(n) && n > 0 && n <= 31) map[idx] = n;
+  const map={};
+  if(bestRow!==-1){
+    (rows[bestRow]||[]).forEach((cell,idx)=>{
+      const n=parseInt(String(cell).split(' ')[0],10);
+      if(!isNaN(n)&&n>=1&&n<=31) map[idx]=n;
     });
   }
   return map;
 }
 
-// ── MAIN PROCESSING ──────────────────────────────────────────────────────────
-document.getElementById('fileInput').addEventListener('change', function(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  document.getElementById('uploadSpinner').classList.add('active');
-  const reader = new FileReader();
-  reader.onload = function(evt) {
-    const wb = XLSX.read(new Uint8Array(evt.target.result), { type: 'array' });
-    const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, defval: null });
-    setTimeout(() => {
-      processAttendance(rows);
-      document.getElementById('uploadSpinner').classList.remove('active');
-    }, 200);
-  };
-  reader.readAsArrayBuffer(file);
-});
+// ── CORE ANALYSIS PER DAY ────────────────────────────────────────────
+/**
+ * Analyse one day's attendance.
+ * 
+ * SINGLE PUNCH LOGIC (BUG FIX):
+ *   - Only punch-in recorded (no out): flag SINGLE_PUNCH (no late calc if punch-in after 17:00)
+ *   - Only punch-out recorded (no in): flag NO_PUNCH_IN, late=0, no HD_IN
+ *   - Both present: normal analysis
+ * 
+ * LATE MINUTES: only counted when a proper punch-in ≤ shift-end AND normal (both punches or single in).
+ * If punch-in > 17:00 with no out → anomalous punch, flag SINGLE_PUNCH, lateMins=0
+ */
+function analyseDay(rawIn, rawOut, statCell){
+  const stat = (statCell||'').toString().trim().toUpperCase();
+  const isWO = stat==='WO'||stat==='WOP';
+  const isLeave = !isWO && stat!=='P' && stat!=='A' && stat!=='';
+  const isAbsent = stat==='A' && rawIn===null && rawOut===null;
 
-function processAttendance(rows) {
-  const grid = document.getElementById('resultsGrid');
-  grid.innerHTML = '';
-  reportBuffer = [];
-  allCards = [];
+  if(isWO && rawIn===null && rawOut===null)
+    return {type:'WO',flags:['WEEK_OFF'],lateMins:0,earlyMins:0,penaltyEligible:false};
+  if(isAbsent)
+    return {type:'ABSENT',flags:['ABSENT'],lateMins:0,earlyMins:0,penaltyEligible:false};
+  if(isLeave && rawIn===null && rawOut===null)
+    return {type:'LEAVE',flags:['LEAVE'],lateMins:0,earlyMins:0,penaltyEligible:false,statCell};
 
-  const { baseDate, label, lastDay } = extractMonthYear(rows);
-  monthStart = baseDate;
-  monthDays = lastDay;
+  const hasPunchIn  = rawIn!==null;
+  const hasPunchOut = rawOut!==null;
 
-  const dayMap = buildDayMap(rows);
-  const colIndexes = Object.keys(dayMap).map(Number);
-
-  let currentEmp = null;
-  let inTimeRow = null;
-  let outTimeRow = null;
-
-  function flushEmployee() {
-    if (!currentEmp || !inTimeRow) return;
-
-    // FIRST PASS: Collect all days of month for this employee
-    const allDaysData = [];
-
-    for (let dayNum = 1; dayNum <= monthDays; dayNum++) {
-      const d = new Date(monthStart);
-      d.setDate(dayNum);
-      const dateStr = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
-      const dayOfWeek = d.toLocaleDateString('en-US', { weekday: 'short' });
-      const isWknd = isWeekend(d);
-
-      // Find punch data for this day
-      let inStr = null, outStr = null;
-      colIndexes.forEach(idx => {
-        if (dayMap[idx] === dayNum) {
-          inStr = inTimeRow[idx] ? String(inTimeRow[idx]).trim() : null;
-          outStr = outTimeRow && outTimeRow[idx] ? String(outTimeRow[idx]).trim() : null;
-        }
-      });
-
-      const rawIn = parseMins(inStr);
-      const rawOut = parseMins(outStr);
-
-      const analysis = analyzeDay(rawIn, rawOut);
-
-      allDaysData.push({
-        dayNum,
-        dateStr,
-        dayOfWeek,
-        isWknd,
-        inStr,
-        outStr,
-        rawIn,
-        rawOut,
-        ...analysis
-      });
+  // ── SINGLE PUNCH: only one of in/out present ──
+  if(hasPunchIn && !hasPunchOut){
+    // Punch-in after SHIFT_END → anomalous (e.g. Malin May 18: in=17:52, no out)
+    if(rawIn>=SHIFT_END){
+      return {type:'SINGLE_PUNCH',flags:['SINGLE_PUNCH','NO_PUNCH_OUT'],lateMins:0,earlyMins:0,penaltyEligible:false,
+              inStr:null,outStr:null,_anomalousPunchIn:true};
     }
-
-    // SECOND PASS: Apply grace period logic
-    let cumulativeLate = 0;
-    const graceHDIndexes = [];
-
-    allDaysData.forEach((day, idx) => {
-      // Skip if it's a leave/absent day (no punch data)
-      if (day.rawIn === null && day.rawOut === null) {
-        day.isLeave = true;
-        return;
-      }
-
-      // Count late minutes only if not already a half-day and has actual late
-      if (!day.isHD && day.lateMins > 0) {
-        cumulativeLate += day.lateMins;
-      }
-
-      // If grace exceeded AND this is a late (not already HD), mark for conversion
-      if (cumulativeLate > GRACE_THRESHOLD && day.lateMins > 0 && !day.isHD && !day.flags.includes('NO_PUNCH_IN')) {
-        day.isHD = true;
-        day.flags.push('GRACE_EXPIRED_HD');
-        graceHDIndexes.push(idx);
-      }
-    });
-
-    // Calculate summary stats
-    const flaggedDays = allDaysData.filter(d => 
-      (d.flags && d.flags.length > 0) || d.lateMins > 0 || d.isHD
-    );
-
-    const totalLateMins = allDaysData.reduce((s, d) => s + d.lateMins, 0);
-    const hdNormalCount = allDaysData.filter(d => 
-      d.isHD && !d.flags.includes('GRACE_EXPIRED_HD') && !d.isLeave
-    ).length;
-    const hdGraceCount = allDaysData.filter(d => 
-      d.flags.includes('GRACE_EXPIRED_HD')
-    ).length;
-    const hdTotal = hdNormalCount + hdGraceCount;
-    const penaltyDays = hdGraceCount; // Days marked HD due to grace exhaustion
-
-    reportBuffer.push({
-      'Name': currentEmp,
-      'Total Late Minutes': totalLateMins,
-      'Total Half-Days': hdTotal,
-      'Normal Half-Days': hdNormalCount,
-      'Penalty Half-Days (Grace Exhausted)': hdGraceCount,
-      'Penalty Days Count': penaltyDays,
-      'allDays': allDaysData
-    });
-
-    renderCard(currentEmp, flaggedDays, totalLateMins, hdTotal, hdGraceCount, penaltyDays, allCards.length);
-    currentEmp = null;
-    inTimeRow = null;
-    outTimeRow = null;
+    // Normal single in (forgot to punch out)
+    let lateMins=0,flags=['SINGLE_PUNCH','NO_PUNCH_OUT'];
+    if(rawIn>SHIFT_START){
+      lateMins=rawIn-SHIFT_START;
+      if(rawIn>HD_IN_CUT) flags.push('HD_IN');
+      else flags.push('AM_LATE');
+    }
+    return {type:'SINGLE_PUNCH',flags,lateMins,earlyMins:0,penaltyEligible:lateMins>0};
   }
 
-  rows.forEach(row => {
-    if (!row) return;
-    for (let c = 0; c < row.length - 1; c++) {
-      if (row[c] === 'Emp. Name:') {
+  if(!hasPunchIn && hasPunchOut){
+    // No punch-in recorded — BUG FIX: late=0, flag NO_PUNCH_IN
+    return {type:'SINGLE_PUNCH',flags:['SINGLE_PUNCH','NO_PUNCH_IN'],lateMins:0,earlyMins:0,penaltyEligible:false};
+  }
+
+  if(!hasPunchIn && !hasPunchOut){
+    // Status P but no punches (shouldn't normally happen, treat as absent)
+    return {type:'ABSENT',flags:['ABSENT'],lateMins:0,earlyMins:0,penaltyEligible:false};
+  }
+
+  // ── BOTH PUNCHES PRESENT ──
+  let flags=[], lateMins=0, earlyMins=0;
+
+  // Entry analysis
+  if(rawIn<=SHIFT_START){
+    // On time
+  } else if(rawIn>SHIFT_END){
+    flags.push('HD_IN'); // ghost punch
+  } else if(rawIn>LUNCH_END){
+    lateMins=rawIn-LUNCH_END; flags.push('PM_LATE','HD_IN');
+  } else if(rawIn>LUNCH_START){
+    flags.push('LUNCH_WINDOW','HD_IN');
+  } else if(rawIn>HD_IN_CUT){
+    lateMins=rawIn-SHIFT_START; flags.push('AM_LATE','HD_IN');
+  } else {
+    lateMins=rawIn-SHIFT_START; flags.push('AM_LATE');
+  }
+
+  // Exit analysis
+  if(rawOut>=SHIFT_END){
+    // On time
+  } else if(rawOut<SHIFT_START){
+    // anomalous, ignore
+  } else if(rawOut<HD_OUT_CUT){
+    earlyMins=HD_OUT_CUT-rawOut; flags.push('HD_OUT');
+  } else {
+    earlyMins=SHIFT_END-rawOut; flags.push('EARLY_OUT');
+  }
+
+  const penaltyEligible = lateMins>0;
+  const isOnTime = flags.length===0;
+  const type = isOnTime ? 'OK' : 'FLAGGED';
+  return {type,flags,lateMins,earlyMins,penaltyEligible};
+}
+
+// ── MAIN PROCESSING ──────────────────────────────────────────────────
+function processAttendance(rows){
+  const grid = document.getElementById('resultsGrid');
+  grid.innerHTML=''; reportBuffer=[]; allCards=[];
+
+  const{baseDate,label}=extractMonthYear(rows);
+  const dayMap=buildDayMap(rows);
+  const colIndexes=Object.keys(dayMap).map(Number);
+
+  let currentEmp=null,currentCode=null,inRow=null,outRow=null,statRow=null;
+
+  function flushEmployee(){
+    if(!currentEmp||!inRow) return;
+
+    // Build raw day logs
+    const rawLogs=[];
+    colIndexes.forEach(colIdx=>{
+      const inStr  = inRow[colIdx]  ? String(inRow[colIdx]).trim()  : null;
+      const outStr = outRow&&outRow[colIdx] ? String(outRow[colIdx]).trim() : null;
+      const stat   = statRow&&statRow[colIdx] ? String(statRow[colIdx]).trim() : '';
+
+      const rawIn  = parseMins(inStr);
+      const rawOut = parseMins(outStr);
+
+      const d=new Date(baseDate); d.setDate(dayMap[colIdx]);
+      const dateStr=d.toLocaleDateString('en-GB',{day:'2-digit',month:'short'});
+      const dayName=d.toLocaleDateString('en-GB',{weekday:'short'});
+
+      const analysis=analyseDay(rawIn,rawOut,stat);
+
+      // Determine display strings (fix anomalous single punch)
+      let displayIn=inStr, displayOut=outStr;
+      if(analysis._anomalousPunchIn){displayIn=null;displayOut=inStr;} // the "in" was actually a late punch-out
+
+      rawLogs.push({
+        dateStr,dayName,
+        inStr:displayIn, outStr:displayOut,
+        rawIn:analysis._anomalousPunchIn?null:rawIn,
+        rawOut:analysis._anomalousPunchIn?rawIn:rawOut,
+        hasPunchIn:displayIn!==null,
+        hasPunchOut:displayOut!==null,
+        stat,
+        ...analysis,
+      });
+    });
+
+    // Grace period: track cumulative late, apply penalty
+    let cumLate=0;
+    let penaltyDays=0;
+    rawLogs.forEach(log=>{
+      if(!log.penaltyEligible) return;
+      cumLate+=log.lateMins;
+      if(cumLate>GRACE_MINS && !log.flags.includes('HD_IN')){
+        log.flags.push('GRACE_HD');
+        log.isGraceHD=true;
+        penaltyDays++;
+      }
+    });
+
+    // Attach rationale
+    rawLogs.forEach(log=>{log.rationale=buildRationale(log);});
+
+    // Summary stats
+    const workLogs=rawLogs.filter(l=>!l.flags.includes('WEEK_OFF'));
+    const totalLateMins=workLogs.reduce((s,l)=>s+l.lateMins,0);
+    const normalHDs=workLogs.filter(l=>(l.flags.includes('HD_IN')||l.flags.includes('HD_OUT'))&&!l.flags.includes('GRACE_HD')).length;
+    const graceHDs=workLogs.filter(l=>l.flags.includes('GRACE_HD')).length;
+    const earlyOuts=workLogs.filter(l=>l.flags.includes('EARLY_OUT')).length;
+    const singlePunches=workLogs.filter(l=>l.flags.includes('SINGLE_PUNCH')).length;
+    const absentDays=workLogs.filter(l=>l.flags.includes('ABSENT')).length;
+    const leaveDays=workLogs.filter(l=>l.flags.includes('LEAVE')).length;
+    const onTimeDays=workLogs.filter(l=>l.type==='OK').length;
+    const totalHDs=normalHDs+graceHDs;
+
+    // Build rationale text for export
+    const flaggedLogs=workLogs.filter(l=>l.type!=='OK'&&l.type!=='WO');
+    const rationaleLines=flaggedLogs.map(l=>{
+      const flagStr=l.flags.filter(f=>!['WEEK_OFF','ABSENT'].includes(f)).join('|')||'OK';
+      const inP=l.inStr||(l.hasPunchIn?'?':'–');
+      const outP=l.outStr||(l.hasPunchOut?'?':'–');
+      return `${l.dateStr} [${flagStr}] in=${inP} out=${outP}${l.rationale?': '+l.rationale:''}`;
+    }).join('\n');
+
+    reportBuffer.push({
+      name:currentEmp,code:currentCode,
+      totalLateMins,normalHDs,graceHDs,totalHDs,
+      earlyOuts,singlePunches,onTimeDays,absentDays,leaveDays,
+      penaltyDays,rationale:rationaleLines,
+    });
+
+    renderCard(currentEmp,rawLogs,{totalLateMins,normalHDs,graceHDs,penaltyDays,earlyOuts,singlePunches,onTimeDays,absentDays,leaveDays},allCards.length);
+    currentEmp=null;currentCode=null;inRow=null;outRow=null;statRow=null;
+  }
+
+  rows.forEach(row=>{
+    if(!row) return;
+    // Check for employee header
+    for(let c=0;c<row.length-1;c++){
+      if(row[c]==='Emp. Name:'){
         flushEmployee();
-        for (let k = c + 1; k < row.length; k++) {
-          if (row[k]) {
-            currentEmp = String(row[k]).trim();
-            break;
-          }
-        }
+        for(let k=c+1;k<row.length;k++){if(row[k]){currentEmp=String(row[k]).trim();break;}}
+        // Get emp code
+        for(let k=0;k<row.length-1;k++){if(row[k]==='Emp. Code:'){for(let m=k+1;m<row.length;m++){if(row[m]){currentCode=String(row[m]).trim();break;}}break;}}
         break;
       }
     }
-    if (currentEmp) {
-      if (row[0] === 'InTime') inTimeRow = row;
-      if (row[0] === 'OutTime') outTimeRow = row;
+    if(currentEmp){
+      if(row[0]==='Status')  statRow=row;
+      if(row[0]==='InTime')  inRow=row;
+      if(row[0]==='OutTime') outRow=row;
     }
   });
-
   flushEmployee();
 
-  // Update UI
-  document.getElementById('reportTitle').textContent = label;
+  // Update header
+  document.getElementById('reportTitle').textContent=label;
 
-  const flagged = reportBuffer.filter(e => 
-    e['Total Late Minutes'] > 0 || e['Total Half-Days'] > 0
-  ).length;
-  const totalLateMins = reportBuffer.reduce((s, e) => s + e['Total Late Minutes'], 0);
-  const totalHDs = reportBuffer.reduce((s, e) => s + e['Total Half-Days'], 0);
-  const totalPenalties = reportBuffer.reduce((s, e) => s + e['Penalty Days Count'], 0);
+  const flagged=reportBuffer.filter(e=>e.totalLateMins>0||e.totalHDs>0||e.singlePunches>0).length;
+  const totalLate=reportBuffer.reduce((s,e)=>s+e.totalLateMins,0);
+  const totalPenalty=reportBuffer.reduce((s,e)=>s+e.penaltyDays,0);
+  const totalSingle=reportBuffer.reduce((s,e)=>s+e.singlePunches,0);
 
-  if (reportBuffer.length) {
-    document.getElementById('statFlagged').textContent = flagged;
-    document.getElementById('statLateMins').textContent = totalLateMins;
-    document.getElementById('statHDs').textContent = totalHDs;
-    document.getElementById('statPenalties').textContent = totalPenalties;
+  if(reportBuffer.length){
+    document.getElementById('statFlagged').textContent=flagged;
+    document.getElementById('statMins').textContent=totalLate;
+    document.getElementById('statPenalty').textContent=totalPenalty;
+    document.getElementById('statSingle').textContent=totalSingle;
     document.getElementById('statsStrip').classList.add('visible');
     document.getElementById('downloadBtn').classList.add('visible');
     document.getElementById('searchWrap').classList.add('visible');
   }
 }
 
-// ── RENDER CARD ──────────────────────────────────────────────────────────────
-function renderCard(name, flaggedDays, totalLateMins, hdTotal, graceHdCount, penaltyDays, idx) {
-  const isPerfect = flaggedDays.length === 0;
-  const card = document.createElement('div');
-  card.className = 'emp-card';
-  card.style.animationDelay = `${Math.min(idx * 50, 400)}ms`;
-  card.dataset.name = name.toLowerCase();
+// ── RATIONALE ─────────────────────────────────────────────────────
+function buildRationale(log){
+  const{flags,lateMins,earlyMins,inStr,outStr,hasPunchIn,hasPunchOut}=log;
+  const parts=[];
+  if(flags.includes('NO_PUNCH_IN')&&hasPunchOut)
+    parts.push(`No punch-in recorded; punch-out at ${outStr||'?'} — late minutes not calculated`);
+  else if(flags.includes('SINGLE_PUNCH')&&hasPunchIn&&!hasPunchOut)
+    parts.push(`Punched in at ${inStr||'?'} but no punch-out recorded`);
+  else if(flags.includes('SINGLE_PUNCH')&&!hasPunchIn&&!hasPunchOut)
+    parts.push(`Single anomalous punch detected — entry corrected to punch-out only`);
+  if(flags.includes('AM_LATE')&&lateMins>0&&!flags.includes('HD_IN'))
+    parts.push(`Arrived ${fmtMins(lateMins)} late (${inStr} vs 10:15 start)`);
+  if(flags.includes('AM_LATE')&&flags.includes('HD_IN')&&!flags.includes('PM_LATE'))
+    parts.push(`Arrived ${fmtMins(lateMins)} late after 11:30 cutoff (${inStr}) — counts as HD In`);
+  if(flags.includes('LUNCH_WINDOW'))
+    parts.push(`Arrived during lunch (${inStr}) — HD In`);
+  if(flags.includes('PM_LATE')&&lateMins>0)
+    parts.push(`Arrived ${fmtMins(lateMins)} after PM resumption at 13:45 (${inStr}) — HD In`);
+  if(flags.includes('HD_OUT'))
+    parts.push(`Left at ${outStr}, before 15:00 cutoff — HD Out, ${fmtMins(earlyMins)} short`);
+  if(flags.includes('EARLY_OUT')&&earlyMins>0&&!flags.includes('HD_OUT'))
+    parts.push(`Left ${fmtMins(earlyMins)} early (${outStr} vs 17:15 end)`);
+  if(flags.includes('GRACE_HD'))
+    parts.push(`Cumulative late exceeded 180-min grace — this late day = Half Day Penalty`);
+  return parts.join('. ')+(parts.length?'.':'');
+}
 
-  const headerClass = isPerfect ? 'card-header perfect-card-header' : 'card-header';
+// ── RENDER CARD ────────────────────────────────────────────────────
+function renderCard(name, logs, stats, idx){
+  const{totalLateMins,normalHDs,graceHDs,penaltyDays,earlyOuts,singlePunches,onTimeDays,absentDays,leaveDays}=stats;
+  const totalHDs=normalHDs+graceHDs;
+  const flaggedCount=logs.filter(l=>l.type!=='OK'&&!l.flags.includes('WEEK_OFF')&&!l.flags.includes('ABSENT')&&!l.flags.includes('LEAVE')).length;
+  const isPerfect=flaggedCount===0&&singlePunches===0&&totalHDs===0;
 
-  const logRows = flaggedDays.map(d => {
-    let rowClass = 'log-row';
-    if (d.flags.includes('GRACE_EXPIRED_HD')) rowClass += ' grace-expired';
-    else if (d.isHD && (d.flags.includes('AM_HD') || d.flags.includes('PM_HD')))
-      rowClass += ' hd-normal';
-    else if (d.flags.includes('NO_PUNCH_IN')) rowClass += ' no-punchin';
-    else if (d.flags.length === 0 && d.lateMins === 0 && !d.isHD) rowClass += ' on-time';
-    else if (d.isLeave) rowClass += ' leave-day';
+  const card=document.createElement('div');
+  card.className='emp-card';
+  card.style.animationDelay=`${Math.min(idx*40,400)}ms`;
+  card.dataset.name=name.toLowerCase();
 
-    const tagMap = {
-      'AM_LATE': '<span class="tag tag-am-late">AM Late</span>',
-      'AM_HD': '<span class="tag tag-am-hd">AM HD</span>',
-      'EARLY_AM': '<span class="tag tag-early">Early AM</span>',
-      'PM_LATE': '<span class="tag tag-pm-late">PM Late</span>',
-      'PM_HD': '<span class="tag tag-pm-hd">PM HD</span>',
-      'EARLY_PM': '<span class="tag tag-early">Early PM</span>',
-      'EARLY_PM_HD': '<span class="tag tag-pm-hd">Early PM HD</span>',
-      'GRACE_EXPIRED_HD': '<span class="tag tag-grace-hd">⚠️ GRACE HD</span>',
-      'NO_PUNCH_IN': '<span class="tag tag-no-in">Missing Punch-In</span>',
-      'MISSING_PUNCHOUT': '<span class="tag tag-no-in">Missing Punch-Out</span>',
-    };
-    const tagsHtml = [...new Set(d.flags)].map(f => tagMap[f] || '').join('');
+  // Build log rows HTML
+  const logRowsHtml=logs.map(log=>{
+    const{flags,type,lateMins,earlyMins,inStr,outStr,hasPunchIn,hasPunchOut,isGraceHD}=log;
 
-    const inClass = d.lateMins > 0 ? 'log-time-in' : 'log-time-in ontime';
-    const inDisp = d.inStr ? `<span class="${inClass}">${d.inStr}</span>` : '';
-    
-    let outClass = 'log-time-out ontime';
-    if (d.flags.includes('MISSING_PUNCHOUT')) outClass = 'log-time-out missing';
-    const outDisplay = d.flags.includes('MISSING_PUNCHOUT') ? '–––' : (d.outStr || '');
-    const outDisp = `<span class="${outClass}">${outDisplay}</span>`;
+    // Row class
+    let rowClass='log-row';
+    if(flags.includes('WEEK_OFF'))       rowClass+=' row-wo';
+    else if(flags.includes('ABSENT'))    rowClass+=' row-absent';
+    else if(flags.includes('LEAVE'))     rowClass+=' row-leave';
+    else if(type==='OK')                 rowClass+=' row-ok';
+    else if(isGraceHD)                   rowClass+=' row-grace-hd';
+    else if(flags.includes('HD_IN')||flags.includes('HD_OUT')) rowClass+=' row-hd';
+    else if(flags.includes('SINGLE_PUNCH')) rowClass+=' row-single-punch';
+    else if(flags.includes('EARLY_OUT')) rowClass+=' row-early';
+    else                                 rowClass+=' row-late';
 
-    const sep = inDisp ? '<span class="log-sep">→</span>' : '';
-    const lost = d.lateMins > 0 ? `<span class="log-lost">−${d.lateMins}m</span>` : '';
+    // Tags
+    let tagsHtml='';
+    if(flags.includes('WEEK_OFF')) tagsHtml='<span class="tag tag-wo">Week Off</span>';
+    else if(flags.includes('ABSENT')) tagsHtml='<span class="tag tag-absent">Absent</span>';
+    else if(flags.includes('LEAVE')) tagsHtml=`<span class="tag tag-leave">${log.statCell||'Leave'}</span>`;
+    else if(type==='OK') tagsHtml='<span class="tag tag-ok">On Time</span>';
+    else{
+      const tagMap={
+        'AM_LATE':'<span class="tag tag-late">AM Late</span>',
+        'PM_LATE':'<span class="tag tag-pm-late">PM Late</span>',
+        'LUNCH_WINDOW':'<span class="tag tag-pm-late">Lunch In</span>',
+        'HD_IN':'<span class="tag tag-hd-in">HD In</span>',
+        'HD_OUT':'<span class="tag tag-hd-out">HD Out</span>',
+        'EARLY_OUT':'<span class="tag tag-early">Early Out</span>',
+        'GRACE_HD':'<span class="tag tag-grace-hd">⚠ Penalty HD</span>',
+        'SINGLE_PUNCH':'<span class="tag tag-single-punch">Single Punch</span>',
+        'NO_PUNCH_IN':'<span class="tag tag-no-punch-in">No Punch In</span>',
+        'NO_PUNCH_OUT':'<span class="tag tag-no-punch-out">No Punch Out</span>',
+      };
+      const shownFlags=['AM_LATE','PM_LATE','LUNCH_WINDOW','HD_IN','HD_OUT','EARLY_OUT','GRACE_HD','NO_PUNCH_IN','NO_PUNCH_OUT'];
+      // For single punch, show only the relevant single-punch tags
+      if(flags.includes('SINGLE_PUNCH')){
+        if(flags.includes('NO_PUNCH_IN'))  tagsHtml+=(tagMap['NO_PUNCH_IN']||'');
+        if(flags.includes('NO_PUNCH_OUT')) tagsHtml+=(tagMap['NO_PUNCH_OUT']||'');
+        if(flags.includes('HD_IN'))        tagsHtml+=(tagMap['HD_IN']||'');
+        if(flags.includes('AM_LATE'))      tagsHtml+=(tagMap['AM_LATE']||'');
+      } else {
+        tagsHtml=[...new Set(flags)].filter(f=>shownFlags.includes(f)).map(f=>tagMap[f]||'').join('');
+      }
+    }
 
-    const rationaleHtml = d.rationale
-      ? `<div class="log-rationale">ℹ ${d.rationale}</div>`
-      : '';
+    // Time display
+    let inHtml='', outHtml='', sepHtml='', lostHtml='';
+    if(!flags.includes('WEEK_OFF')&&!flags.includes('ABSENT')&&!flags.includes('LEAVE')){
+      if(hasPunchIn){
+        const cls=lateMins>0?'t-in late':'t-in ok';
+        inHtml=`<span class="${cls}">${inStr}</span>`;
+      } else if(flags.includes('NO_PUNCH_IN')){
+        inHtml=`<span class="t-in missing">–––</span>`;
+      }
+      if(hasPunchOut){
+        let cls='t-out ok';
+        if(flags.includes('HD_OUT')) cls='t-out hd';
+        else if(flags.includes('EARLY_OUT')) cls='t-out early';
+        outHtml=`<span class="${cls}">${outStr}</span>`;
+      } else if(flags.includes('NO_PUNCH_OUT')){
+        outHtml=`<span class="t-out missing">–––</span>`;
+      }
+      if(inHtml&&outHtml) sepHtml='<span class="t-sep">→</span>';
+      const lost=lateMins+earlyMins;
+      if(lost>0&&!flags.includes('SINGLE_PUNCH')){
+        if(isGraceHD) lostHtml=`<span class="t-penalty">−${lost}m ⚠</span>`;
+        else lostHtml=`<span class="t-lost">−${lost}m</span>`;
+      }
+    }
 
-    return `
-      <div class="${rowClass}">
-        <span class="log-date">${d.dateStr}</span>
-        <div class="log-tags">${tagsHtml}</div>
-        <div class="log-right">${inDisp}${sep}${outDisp}${lost}</div>
-      </div>${rationaleHtml}`;
+    const rationaleHtml=log.rationale?`<div class="log-rationale">ℹ ${log.rationale}</div>`:'';
+
+    return `<div class="${rowClass}">
+      <span class="log-date">${log.dateStr}</span>
+      <div class="log-tags">${tagsHtml}</div>
+      <div class="log-right">${inHtml}${sepHtml}${outHtml}${lostHtml}</div>
+    </div>${rationaleHtml}`;
   }).join('');
 
-  const bodyContent = isPerfect
-    ? '<div class="perfect-label">✓ Perfect Attendance</div>'
-    : logRows;
+  const headerCls=isPerfect?'card-header perfect-card-header':'card-header';
+  const avatarCls=isPerfect?'emp-avatar':'emp-avatar';
+  const subtitleTxt=`${flaggedCount} flagged · ${logs.length} days`;
 
-  card.innerHTML = `
-    <div class="${headerClass}">
-      <div class="emp-avatar">${initials(name)}</div>
+  card.innerHTML=`
+    <div class="${headerCls}">
+      <div class="${avatarCls}">${initials(name)}</div>
       <div class="emp-info">
         <div class="emp-name">${name}</div>
-        <div class="emp-dept">${flaggedDays.length} flagged day${flaggedDays.length !== 1 ? 's' : ''}</div>
+        <div class="emp-dept">${subtitleTxt}</div>
       </div>
       <div class="mins-pill">
         <span class="mins-num">${totalLateMins}</span>
-        <span class="mins-lbl">Late Mins</span>
-        <span class="mins-sub">${hdTotal} HDs</span>
+        <span class="mins-lbl">late mins</span>
       </div>
     </div>
-    <div class="card-body">${bodyContent}</div>
+    <div class="card-body">${logRowsHtml}</div>
+    <div class="card-summary">
+      <div class="sum-item"><div class="sum-label">Late Mins</div><div class="sum-value ${totalLateMins>GRACE_MINS?'red':'warn'}">${totalLateMins}</div></div>
+      <div class="sum-item"><div class="sum-label">Penalty Days</div><div class="sum-value ${penaltyDays>0?'red':''}">${penaltyDays}</div></div>
+      <div class="sum-item"><div class="sum-label">Half Days</div><div class="sum-value ${totalHDs>0?'warn':''}">${totalHDs}</div></div>
+      <div class="sum-item"><div class="sum-label">Single Punch</div><div class="sum-value ${singlePunches>0?'warn':''}">${singlePunches}</div></div>
+      <div class="sum-item"><div class="sum-label">On Time</div><div class="sum-value ok">${onTimeDays}</div></div>
+      <div class="sum-item"><div class="sum-label">Absent / Leave</div><div class="sum-value">${absentDays} / ${leaveDays}</div></div>
+    </div>
     <div class="card-footer">
-      <span class="f-pill"><span class="f-dot ${totalLateMins > 0 ? 'danger' : ''}"></span>${totalLateMins}m late</span>
-      <span class="f-pill"><span class="f-dot ${hdTotal > 0 ? 'warn' : ''}"></span>${hdTotal} HDs</span>
-      <span class="f-pill"><span class="f-dot ${graceHdCount > 0 ? 'red' : ''}"></span>${penaltyDays} penalty</span>
+      <span class="f-pill"><span class="f-dot ${penaltyDays>0?'red':''}"></span>${penaltyDays} penalty half-day${penaltyDays!==1?'s':''}</span>
+      <span class="f-pill"><span class="f-dot ${totalHDs>0?'danger':''}"></span>${totalHDs} half-day${totalHDs!==1?'s':''}</span>
+      <span class="f-pill"><span class="f-dot ${singlePunches>0?'purple':''}"></span>${singlePunches} single punch${singlePunches!==1?'es':''}</span>
     </div>`;
 
   document.getElementById('resultsGrid').appendChild(card);
-  allCards.push({ name: name.toLowerCase(), el: card });
+  allCards.push({name:name.toLowerCase(),el:card});
 }
 
-// ── SEARCH ────────────────────────────────────────────────────────────────────
-document.getElementById('searchInput').addEventListener('input', function() {
-  const q = this.value.trim().toLowerCase();
-  let visible = 0;
-  allCards.forEach(({ name, el }) => {
-    const match = !q || name.includes(q);
-    el.style.display = match ? '' : 'none';
-    if (match) visible++;
-  });
-  let noRes = document.getElementById('noResults');
-  if (!noRes) {
-    noRes = document.createElement('div');
-    noRes.id = 'noResults';
-    noRes.className = 'no-results';
-    noRes.textContent = 'No employees match your search.';
-    document.getElementById('resultsGrid').appendChild(noRes);
-  }
-  noRes.style.display = (q && visible === 0) ? 'block' : 'none';
+// ── SEARCH ─────────────────────────────────────────────────────────
+document.getElementById('searchInput').addEventListener('input',function(){
+  const q=this.value.trim().toLowerCase();
+  let visible=0;
+  allCards.forEach(({name,el})=>{const match=!q||name.includes(q);el.style.display=match?'':'none';if(match)visible++;});
+  let nr=document.getElementById('noResults');
+  if(!nr){nr=document.createElement('div');nr.id='noResults';nr.className='no-results';nr.textContent='No employees match your search.';document.getElementById('resultsGrid').appendChild(nr);}
+  nr.style.display=(q&&visible===0)?'block':'none';
 });
 
-// ── EXCEL EXPORT WITH FULL MONTH VIEW ────────────────────────────────────────
-document.getElementById('downloadBtn').addEventListener('click', () => {
-  const wb = XLSX.utils.book_new();
+// ── EXPORT XLSX ─────────────────────────────────────────────────────
+document.getElementById('downloadBtn').addEventListener('click',()=>{
+  const wb=XLSX.utils.book_new();
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // SHEET 1: SUMMARY
-  // ═══════════════════════════════════════════════════════════════════════════
-  const summaryData = reportBuffer.map(e => ({
-    'Employee Name': e['Name'],
-    'Total Late Minutes': e['Total Late Minutes'],
-    'Total Half-Days': e['Total Half-Days'],
-    'Normal Half-Days': e['Normal Half-Days'],
-    'Grace-Exhausted HDs': e['Penalty Half-Days (Grace Exhausted)'],
-    'Penalty Days': e['Penalty Days Count'],
-  }));
-
-  const wsSummary = XLSX.utils.json_to_sheet(summaryData);
-
-  // Apply colors to summary
-  for (let i = 1; i <= summaryData.length; i++) {
-    const emp = reportBuffer[i - 1];
-    const graceHDs = emp['Penalty Half-Days (Grace Exhausted)'];
-
-    // RED for grace-exhausted half-days
-    if (graceHDs > 0) {
-      for (let col = 0; col < 6; col++) {
-        const cellRef = XLSX.utils.encode_col(col) + (i + 1);
-        if (wsSummary[cellRef]) {
-          wsSummary[cellRef].fill = { fgColor: { rgb: 'FFFF0000' } };
-          wsSummary[cellRef].font = { bold: true, color: { rgb: 'FFFFFFFF' } };
-        }
-      }
-    } else if (emp['Total Late Minutes'] > 0 || emp['Total Half-Days'] > 0) {
-      // YELLOW for flagged
-      for (let col = 0; col < 6; col++) {
-        const cellRef = XLSX.utils.encode_col(col) + (i + 1);
-        if (wsSummary[cellRef]) {
-          wsSummary[cellRef].fill = { fgColor: { rgb: 'FFFFFF00' } };
-          wsSummary[cellRef].font = { color: { rgb: 'FF000000' } };
-        }
-      }
-    }
-  }
-
-  // Header styling
-  for (let col = 0; col < 6; col++) {
-    const cellRef = XLSX.utils.encode_col(col) + '1';
-    if (wsSummary[cellRef]) {
-      wsSummary[cellRef].fill = { fgColor: { rgb: 'FF0E5774' } };
-      wsSummary[cellRef].font = { bold: true, color: { rgb: 'FFFFFFFF' } };
-    }
-  }
-
-  wsSummary['!cols'] = [
-    { wch: 24 },
-    { wch: 16 },
-    { wch: 16 },
-    { wch: 16 },
-    { wch: 20 },
-    { wch: 14 },
+  // ── SUMMARY SHEET ──
+  const summaryHeader=[
+    'Emp Code','Employee Name','Total Late Minutes','Grace Used (180 min limit)',
+    'Normal Half Days','Penalty Half Days (Grace Exceeded)','Total Half Days',
+    'Early Exits','Single Punch Days','On Time Days','Absent Days','Leave Days',
+    'Rationale / Details',
   ];
+  const summaryRows=reportBuffer.map(e=>[
+    e.code,e.name,e.totalLateMins,`${Math.min(e.totalLateMins,GRACE_MINS)} / ${GRACE_MINS}`,
+    e.normalHDs,e.penaltyDays,e.totalHDs,
+    e.earlyOuts,e.singlePunches,e.onTimeDays,e.absentDays,e.leaveDays,
+    e.rationale,
+  ]);
+  const ws=XLSX.utils.aoa_to_sheet([summaryHeader,...summaryRows]);
+  ws['!cols']=[{wch:10},{wch:22},{wch:18},{wch:22},{wch:18},{wch:28},{wch:15},{wch:14},{wch:16},{wch:13},{wch:12},{wch:12},{wch:100}];
+  ws['!freeze']={xSplit:0,ySplit:1};
+  XLSX.utils.book_append_sheet(wb,ws,'Summary');
 
-  XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary');
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // SHEET 2: FULL MONTH VIEW (All Days for Each Employee)
-  // ═══════════════════════════════════════════════════════════════════════════
-  reportBuffer.forEach((emp) => {
-    const sheetName = emp['Name'].slice(0, 31); // Excel sheet name limit
-
-    // Build headers (Date | Day | Punch In | Punch Out | Status | Late Mins | Rationale)
-    const headers = ['Date', 'Day', 'Punch In', 'Punch Out', 'Status', 'Late Mins', 'Rationale/Reason'];
-    const sheetData = [headers];
-
-    emp['allDays'].forEach(day => {
-      let status = 'Present';
-      let lateMinsDisplay = '';
-
-      if (day.isLeave) {
-        status = 'Leave / Absent';
-      } else if (day.flags.includes('NO_PUNCH_IN')) {
-        status = 'No Punch-In';
-        lateMinsDisplay = 0;
-      } else if (day.isHD && day.flags.includes('GRACE_EXPIRED_HD')) {
-        status = 'Half-Day (Grace Exhausted)';
-        lateMinsDisplay = day.lateMins;
-      } else if (day.isHD) {
-        status = 'Half-Day';
-        lateMinsDisplay = day.lateMins;
-      } else if (day.lateMins > 0) {
-        status = 'Late';
-        lateMinsDisplay = day.lateMins;
-      } else if (day.flags.length > 0) {
-        status = 'Working';
-        lateMinsDisplay = day.lateMins;
-      }
-
-      const rationale = day.rationale || (day.isLeave ? 'Leave / Not a working day' : '—');
-
-      sheetData.push([
-        day.dateStr,
-        day.dayOfWeek,
-        day.inStr || '—',
-        day.outStr || '—',
-        status,
-        lateMinsDisplay || '—',
-        rationale
-      ]);
-    });
-
-    const wsMonth = XLSX.utils.aoa_to_sheet(sheetData);
-
-    // Color coding
-    for (let i = 1; i < sheetData.length; i++) {
-      const day = emp['allDays'][i - 1];
-      let bgColor = 'FFFFFFFF'; // White
-      let fontColor = 'FF000000'; // Black
-
-      if (day.isLeave) {
-        bgColor = 'FFE8E8E8'; // Light gray
-      } else if (day.flags.includes('NO_PUNCH_IN')) {
-        bgColor = 'FFF3E5F5'; // Light purple
-        fontColor = 'FF6A1B9A';
-      } else if (day.flags.includes('GRACE_EXPIRED_HD')) {
-        bgColor = 'FFFF0000'; // RED - grace exhausted
-        fontColor = 'FFFFFFFF';
-      } else if (day.isHD) {
-        bgColor = 'FFFFFF00'; // Yellow - normal HD
-      } else if (day.lateMins > 0) {
-        bgColor = 'FFFFCDD2'; // Light red - late
-      } else if (day.flags.length === 0 && day.rawIn !== null) {
-        bgColor = 'FFE8F5E9'; // Light green - on time
-      }
-
-      for (let col = 0; col < 7; col++) {
-        const cellRef = XLSX.utils.encode_col(col) + (i + 1);
-        if (wsMonth[cellRef]) {
-          wsMonth[cellRef].fill = { fgColor: { rgb: bgColor } };
-          wsMonth[cellRef].font = { color: { rgb: fontColor } };
-          if (day.flags.includes('GRACE_EXPIRED_HD')) {
-            wsMonth[cellRef].font.bold = true;
-          }
-        }
-      }
-    }
-
-    // Header styling
-    for (let col = 0; col < 7; col++) {
-      const cellRef = XLSX.utils.encode_col(col) + '1';
-      if (wsMonth[cellRef]) {
-        wsMonth[cellRef].fill = { fgColor: { rgb: 'FF0E5774' } };
-        wsMonth[cellRef].font = { bold: true, color: { rgb: 'FFFFFFFF' } };
-      }
-    }
-
-    wsMonth['!cols'] = [
-      { wch: 14 },
-      { wch: 10 },
-      { wch: 12 },
-      { wch: 12 },
-      { wch: 28 },
-      { wch: 12 },
-      { wch: 50 },
-    ];
-
-    XLSX.utils.book_append_sheet(wb, wsMonth, sheetName);
-  });
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // SHEET 3: SHIFT RULES REFERENCE
-  // ═══════════════════════════════════════════════════════════════════════════
-  const rulesData = [
-    ['SHIFT RULES REFERENCE', '', '', ''],
-    ['', '', '', ''],
-    ['Rule', 'Time / Condition', 'Action', 'Notes'],
-    ['Office Start (AM)', '10:15 AM', 'Start of first shift', ''],
-    ['On Time (AM)', 'In at or before 10:15', 'Recorded as Present', ''],
-    ['Late (AM)', 'In between 10:15–11:30', 'Late minutes counted', 'Deducted from grace'],
-    ['Half-Day (AM Auto)', 'In after 11:30 AM', 'Auto half-day', 'Morning session missed'],
-    ['Early Exit (AM)', 'Out before 13:00 PM', 'Minutes short counted as late', 'Added to grace total'],
-    ['Lunch Break', '13:00–13:45 PM', 'Not counted as working', 'Mandatory break'],
-    ['Office Start (PM)', '13:45 PM', 'Start of second shift', ''],
-    ['Late (PM)', 'In between 13:45–15:00', 'Late minutes counted', 'Deducted from grace'],
-    ['Half-Day (PM Auto)', 'In after 15:00 PM', 'Auto half-day', 'Afternoon session missed'],
-    ['Early Exit (PM)', 'Out before 17:15 & after 15:00', 'Minutes short counted as late', 'Added to grace total'],
-    ['Early Exit (PM HD)', 'Out before 15:00 PM', 'Auto half-day', 'Afternoon session cut short'],
-    ['Office Close', '17:15 PM', 'End of working day', ''],
-    ['', '', '', ''],
-    ['GRACE PERIOD ENFORCEMENT', '', '', ''],
-    ['Grace Threshold', '180 minutes cumulative', 'Covers all late minutes', 'Per calendar month'],
-    ['After Grace Exhausted', 'Any subsequent late', 'Auto converted to Half-Day', 'RED highlighted in Excel'],
-    ['Penalty Half-Day', 'Marked post-grace exhaustion', 'Counts as absence loss', 'Tracked separately'],
-    ['', '', '', ''],
-    ['BUG FIX: Missing Punch-In', '', '', ''],
-    ['Condition', 'Punch-In = NULL, Punch-Out = Data', 'Status = No Punch-In', 'Late Minutes = 0'],
-    ['Handling', 'Flagged as "Missed Punch"', 'Does not count toward grace', 'Does not trigger late calc'],
-  ];
-
-  const wsRules = XLSX.utils.aoa_to_sheet(rulesData);
-  wsRules['!cols'] = [
-    { wch: 28 },
-    { wch: 26 },
-    { wch: 32 },
-    { wch: 40 },
-  ];
-
-  XLSX.utils.book_append_sheet(wb, wsRules, 'Shift Rules');
-
-  // Write file
-  const dateStr = new Date().toISOString().slice(0, 10);
-  XLSX.writeFile(wb, `KASE_Attendance_FullMonth_${dateStr}.xlsx`);
+  XLSX.writeFile(wb,'KASE_Attendance_Report.xlsx');
 });
 </script>
 </body>
